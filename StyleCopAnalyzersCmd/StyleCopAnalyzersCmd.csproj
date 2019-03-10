@@ -1,0 +1,43 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <CodeAnalysisRuleSet>stylecop.ruleset</CodeAnalysisRuleSet>
+    <LangVersion>7.3</LangVersion>
+    <AssemblyVersion>1.0.0.1</AssemblyVersion>
+    <Version>0.5.0</Version>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommandLineParser" Version="2.4.3" />
+    <PackageReference Include="Microsoft.Build.Locator" Version="1.2.2" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="2.10.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="2.10.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="2.10.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.6.3">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="2.10.0" />
+    <PackageReference Include="StyleCop.Analyzers" Version="1.1.1-rc.101">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="System.Security.Permissions" Version="4.5.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include=".\stylecop.json" Link="stylecop.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include=".\stylecop.ruleset" Link="stylecop.ruleset" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="StyleCop.Analyzers">
+      <HintPath>..\packages\stylecop.analyzers.unstable\1.1.1.101\analyzers\dotnet\cs\StyleCop.Analyzers.dll</HintPath>
+    </Reference>
+    <Reference Include="StyleCop.Analyzers.CodeFixes">
+      <HintPath>..\packages\stylecop.analyzers.unstable\1.1.1.101\analyzers\dotnet\cs\StyleCop.Analyzers.CodeFixes.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+</Project>
