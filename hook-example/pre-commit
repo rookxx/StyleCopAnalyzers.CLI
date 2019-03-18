@@ -1,0 +1,6 @@
+STYLE_CHECK_COMMAND="dotnet ./tools/bin/style/StyleCopAnalyzersCmd.dll check ./"
+STYLE_CHECK_RESULT=`${STYLE_CHECK_COMMAND}`
+
+echo "${STYLE_CHECK_RESULT}"
+
+[[ -z "${STYLE_CHECK_RESULT}" ]]

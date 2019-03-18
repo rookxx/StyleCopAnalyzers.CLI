@@ -144,7 +144,7 @@
             }
             catch (Exception exception)
             {
-                System.Diagnostics.Debug.WriteLine(exception);
+                Console.WriteLine(exception.Message);
             }
         }
     }
