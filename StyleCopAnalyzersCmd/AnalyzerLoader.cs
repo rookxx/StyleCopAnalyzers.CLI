@@ -56,14 +56,14 @@ namespace StyleCopAnalyzersCmd
             return analyzers.ToImmutable();
         }
 
-        public ImmutableList<CodeFixProvider> GetCodeFixProviders()
+        public ImmutableArray<CodeFixProvider> GetCodeFixProviders()
         {
             var name = new AssemblyName(StyleCopAnalyzersCodeFixesDll);
             var assembly = AssemblyLoadContext.Default.LoadFromAssemblyName(name);
 
             var codeFixProviderType = typeof(CodeFixProvider);
 
-            var providers = new List<CodeFixProvider>();
+            var providers = ImmutableArray.CreateBuilder<CodeFixProvider>();
 
             foreach (var type in assembly.GetTypes())
             {
@@ -73,18 +73,15 @@ namespace StyleCopAnalyzersCmd
                 }
 
                 var codeFixProvider = (CodeFixProvider)Activator.CreateInstance(type);
-
-
                 if (!IsValidCodeFixProvider(codeFixProvider, rulesets))
                 {
                     continue;
                 }
 
                 providers.Add(codeFixProvider);
-
             }
 
-            return providers.ToImmutableList();
+            return providers.ToImmutableArray();
         }
 
         private bool IsValidAnalyzer(DiagnosticAnalyzer analyzer, Dictionary<string, ReportDiagnostic> rulesets)

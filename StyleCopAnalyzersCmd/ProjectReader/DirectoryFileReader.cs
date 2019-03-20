@@ -34,7 +34,11 @@ namespace StyleCopAnalyzersCmd
 
             var syntaxTrees = new List<SyntaxTree>();
 
-            MSBuildLocator.RegisterDefaults();
+            if (!MSBuildLocator.IsRegistered)
+            {
+                MSBuildLocator.RegisterDefaults();
+            }
+
             MSBuildWorkspace workspace = MSBuildWorkspace.Create();
             var solution = workspace.CurrentSolution;
             var project = solution.AddProject("Temp", "Temp", "C#");

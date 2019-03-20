@@ -39,7 +39,7 @@
                         async (StyleFixer style) =>
                         {
                             // WIP
-                            await Task.Yield();
+                            await style.FixCode(cancellationTokenSource.Token).ConfigureAwait(false);
                         },
                         async er =>
                         {
@@ -50,6 +50,7 @@
             catch (Exception exception)
             {
                 Console.WriteLine(exception.Message);
+                Console.WriteLine(exception.StackTrace);
             }
         }
     }

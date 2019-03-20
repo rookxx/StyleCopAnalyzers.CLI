@@ -16,7 +16,7 @@ namespace StyleCopAnalyzersCmd
     {
         [Option('r', "ruleset", Required = false, HelpText = "Ruleset file path.")]
         public string RuleSetFilePath { get; set; }
-        [Option('s', "stylcopjson", Required = false, HelpText = "stylecop.json file path")]
+        [Option('j', "json", Required = false, HelpText = "stylecop.json file path")]
         public string StyleCopJsonFilePath { get; set; }
         [Option('f', "format", Required = false, Default = "text", HelpText = "output format\n    text raw text\n    xml  legacy stylecop xml format")]
         public string OutputFormat { get; set; }
