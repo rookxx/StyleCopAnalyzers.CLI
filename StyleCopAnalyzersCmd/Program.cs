@@ -16,11 +16,6 @@
     using CommandLine;
     using File = System.IO.File;
 
-    [Verb("fix", HelpText = "WIP:Fix Code Style")]
-    public class StyleFixer
-    {
-    }
-
     internal static class Program
     {
         static async Task Main(string[] args)

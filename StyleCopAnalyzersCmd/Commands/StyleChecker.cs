@@ -2,6 +2,7 @@ namespace StyleCopAnalyzersCmd
 {
     using System;
     using System.Collections.Generic;
+    using System.Collections.Immutable;
     using System.Diagnostics;
     using System.IO;
     using System.Threading;
@@ -36,13 +37,13 @@ namespace StyleCopAnalyzersCmd
 
         public async Task Check(CancellationToken cancellationToken)
         {
-            RuleSetFilePath = ArgumentPathHelper.GetAbsoluteOrDefaultFilePath(RuleSetFilePath, "./stylecop.ruleset");
-            StyleCopJsonFilePath = ArgumentPathHelper.GetAbsoluteOrDefaultFilePath(StyleCopJsonFilePath, "./stylecop.json");
-            TargetFileOrDirectory = ArgumentPathHelper.GetAbsolutePath(TargetFileOrDirectory);
+            RuleSetFilePath = CommandHelper.GetAbsoluteOrDefaultFilePath(RuleSetFilePath, "./stylecop.ruleset");
+            StyleCopJsonFilePath = CommandHelper.GetAbsoluteOrDefaultFilePath(StyleCopJsonFilePath, "./stylecop.json");
+            TargetFileOrDirectory = CommandHelper.GetAbsolutePath(TargetFileOrDirectory);
 
             stopwatch = Stopwatch.StartNew();
 
-            var inputKind = GetInputKindFromFileOrDirectory(TargetFileOrDirectory);
+            var inputKind = CommandHelper.GetInputKindFromFileOrDirectory(TargetFileOrDirectory);
             if (!inputKind.HasValue) { return; }
 
             var projects = inputKind.Value.ToReader().ReadAllSourceCodeFiles(TargetFileOrDirectory, StyleCopJsonFilePath);
@@ -56,47 +57,13 @@ namespace StyleCopAnalyzersCmd
             }
 
             var analyzerLoader = new AnalyzerLoader(RuleSetFilePath);
-
             var analyzers = analyzerLoader.GetAnalyzers();
-
-            var diagnosticsAll = new List<Diagnostic>();
-            foreach (var project in projects)
-            {
-                var compilation = await project.GetCompilationAsync(cancellationToken).ConfigureAwait(false);
-                var compilationWithAnalyzers = compilation.WithAnalyzers(analyzers, project.AnalyzerOptions);
-                var diagnostics = await compilationWithAnalyzers.GetAnalyzerDiagnosticsAsync(cancellationToken).ConfigureAwait(false);
-
-                diagnosticsAll.AddRange(diagnostics);
-            }
+            var diagnostics = await CommandHelper.GetAnalyzerDiagnosticsAsync(projects, analyzers, cancellationToken).ConfigureAwait(false);
 
             var writer = outputKind.ToWriter();
-            writer.Write(diagnosticsAll);
+            writer.Write(diagnostics);
 
             DebugTimeLog("Check Style Completed");
-        }
-
-        private InputKind? GetInputKindFromFileOrDirectory(string targetFileOrDirectory)
-        {
-            if (File.Exists(targetFileOrDirectory))
-            {
-                var fileinfo = new FileInfo(targetFileOrDirectory);
-                switch (fileinfo.Extension)
-                {
-                    case ".csproj": return InputKind.Csproj;
-                    case ".sln": return InputKind.Sln;
-                    default:
-                        Console.Error.WriteLine($"Supported File Extension is .sln or .csproj only. {fileinfo.Extension}");
-                        return null;
-                }
-            }
-
-            if (Directory.Exists(targetFileOrDirectory))
-            {
-                return InputKind.Directory;
-            }
-
-            Console.Error.WriteLine($"Could not find {targetFileOrDirectory}");
-            return null;
         }
     }
 }
