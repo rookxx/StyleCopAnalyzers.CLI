@@ -10,6 +10,7 @@ namespace StyleCopAnalyzersCmd
     using System.IO;
     using Microsoft.CodeAnalysis.CSharp.Syntax;
     using System.Collections.Generic;
+    using System.Collections.Immutable;
 
     public class XmlWriter : IDiagnosticWriter
     {
@@ -52,13 +53,13 @@ namespace StyleCopAnalyzersCmd
 
             public StyleCopViolations() { }
 
-            public StyleCopViolations(List<Diagnostic> diagnostics)
+            public StyleCopViolations(ImmutableArray<Diagnostic> diagnostics)
             {
                 Violations = diagnostics.Select(d => new Violation(d)).ToArray();
             }
         }
 
-        void IDiagnosticWriter.Write(List<Diagnostic> diagnostics)
+        void IDiagnosticWriter.Write(ImmutableArray<Diagnostic> diagnostics)
         {
             var serializer = new XmlSerializer(typeof(StyleCopViolations));
             var sw = new StreamWriter(Console.OpenStandardOutput());

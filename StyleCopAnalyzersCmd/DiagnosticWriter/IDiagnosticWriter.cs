@@ -1,10 +1,10 @@
 namespace StyleCopAnalyzersCmd
 {
-    using System.Collections.Generic;
+    using System.Collections.Immutable;
     using Microsoft.CodeAnalysis;
 
     public interface IDiagnosticWriter
     {
-        void Write(List<Diagnostic> diagnostics);
+        void Write(ImmutableArray<Diagnostic> diagnostics);
     }
 }

@@ -1,12 +1,12 @@
 namespace StyleCopAnalyzersCmd
 {
     using System;
-    using System.Collections.Generic;
+    using System.Collections.Immutable;
     using Microsoft.CodeAnalysis;
 
     public class ConsoleWriter : IDiagnosticWriter
     {
-        void IDiagnosticWriter.Write(List<Diagnostic> diagnostics)
+        void IDiagnosticWriter.Write(ImmutableArray<Diagnostic> diagnostics)
         {
             foreach (var d in diagnostics)
             {
