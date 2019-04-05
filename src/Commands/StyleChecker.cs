@@ -23,8 +23,15 @@ namespace StyleCopAnalyzers.CLI
         [Value(0, MetaName = "sln/csproj file path or directory path")]
         public string TargetFileOrDirectory { get; set; }
 
+        private ILogger logger;
+
         public StyleChecker()
         {
+        }
+
+        public void SetLogger(ILogger logger)
+        {
+            this.logger = logger;
         }
 
         private Stopwatch stopwatch;
@@ -32,7 +39,7 @@ namespace StyleCopAnalyzers.CLI
         [Conditional("DEBUG")]
         private void DebugTimeLog(string message)
         {
-            Console.WriteLine($"{message} in {stopwatch.ElapsedMilliseconds}ms");
+            this.logger.LogDebug($"{message} in {stopwatch.ElapsedMilliseconds}ms");
         }
 
         public async Task Check(CancellationToken cancellationToken)

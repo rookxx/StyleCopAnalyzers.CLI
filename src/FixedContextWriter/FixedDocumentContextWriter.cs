@@ -8,8 +8,16 @@ namespace StyleCopAnalyzers.CLI
 
     public class FixedDocumentContextWriter : IFixedContextWriter
     {
+        private ILogger logger = new SilentLogger();
+
+        void IFixedContextWriter.SetLogger(ILogger logger)
+        {
+            this.logger = logger;
+        }
+
         void IFixedContextWriter.Write(FixedDocumentContext context)
         {
+            this.logger.LogInformation("    Fix: " + context.Document.FilePath);
             WriteChangedDocuments(context.FixedResult.ChangedDocuments);
 
             var directoryPath = Path.GetDirectoryName(context.Document.FilePath);
@@ -24,7 +32,7 @@ namespace StyleCopAnalyzers.CLI
             {
                 var path = document.FilePath;
                 var text = document.GetTextAsync().Result;
-                Console.WriteLine("        Changed:" + path);
+                this.logger.LogVerbose("        Changed:" + path);
                 File.WriteAllText(path, text.ToString());
             }
         }
@@ -36,7 +44,7 @@ namespace StyleCopAnalyzers.CLI
                 var fileName = document.Name;
                 var path = Path.Combine(directoryPath, fileName);
                 var text = document.GetTextAsync().Result;
-                Console.WriteLine("        Added:" + path);
+                this.logger.LogVerbose("        Added:" + path);
                 File.WriteAllText(path, text.ToString());
             }
         }
@@ -45,7 +53,7 @@ namespace StyleCopAnalyzers.CLI
         {
             foreach(var document in documents)
             {
-                Console.WriteLine("        Removed:" + document.FilePath);
+                this.logger.LogVerbose("        Removed:" + document.FilePath);
                 File.Delete(document.FilePath);
             }
         }

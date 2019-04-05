@@ -38,7 +38,7 @@
                         },
                         async (StyleFixer style) =>
                         {
-                            // WIP
+                            style.SetLogger(new SimpleConsoleLogger());
                             await style.FixCode(cancellationTokenSource.Token).ConfigureAwait(false);
                         },
                         async er =>
