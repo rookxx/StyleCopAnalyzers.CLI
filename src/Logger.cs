@@ -16,6 +16,7 @@ namespace StyleCopAnalyzers.CLI
         void LogInformation(object message);
         void LogDebug(object message);
         void LogVerbose(object message);
+        void LogError(object message);
     }
 
     public class SilentLogger : ILogger
@@ -24,6 +25,7 @@ namespace StyleCopAnalyzers.CLI
         void ILogger.LogInformation(object message) { }
         void ILogger.LogVerbose(object message) { }
         void ILogger.SetLogLevel(LogLevel level) { }
+        void ILogger.LogError(object message) { }
     }
 
     public class SimpleConsoleLogger : ILogger
@@ -57,6 +59,11 @@ namespace StyleCopAnalyzers.CLI
         {
             if (logLevel < LogLevel.Verbose) { return; }
             Console.WriteLine(message);
+        }
+
+        void ILogger.LogError(object message)
+        {
+            Console.Error.WriteLine(message);
         }
     }
 }

@@ -1,20 +1,9 @@
 ﻿namespace StyleCopAnalyzers.CLI
 {
-    using Microsoft.Build.Locator;
-    using Microsoft.CodeAnalysis;
-    using Microsoft.CodeAnalysis.CSharp;
-    using Microsoft.CodeAnalysis.Diagnostics;
-    using Microsoft.CodeAnalysis.MSBuild;
-    using Microsoft.CodeAnalysis.Text;
     using System;
-    using System.Collections.Generic;
-    using System.Diagnostics;
-    using System.IO;
-    using System.Reflection;
-    using System.Threading.Tasks;
     using System.Threading;
+    using System.Threading.Tasks;
     using CommandLine;
-    using File = System.IO.File;
 
     internal static class Program
     {
@@ -28,6 +17,7 @@
                     cancellationTokenSource.Cancel();
                 };
 
+            var logger = new SimpleConsoleLogger() as ILogger;
             try
             {
                 await Parser.Default.ParseArguments<StyleChecker, StyleFixer>(args)
@@ -38,7 +28,7 @@
                         },
                         async (StyleFixer style) =>
                         {
-                            style.SetLogger(new SimpleConsoleLogger());
+                            style.SetLogger(logger);
                             await style.FixCode(cancellationTokenSource.Token).ConfigureAwait(false);
                         },
                         async er =>
@@ -49,8 +39,8 @@
             }
             catch (Exception exception)
             {
-                Console.WriteLine(exception.Message);
-                Console.WriteLine(exception.StackTrace);
+                logger.LogError(exception.Message);
+                logger.LogError(exception.StackTrace);
             }
         }
     }

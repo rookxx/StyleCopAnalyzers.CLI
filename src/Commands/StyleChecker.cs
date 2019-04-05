@@ -48,7 +48,12 @@ namespace StyleCopAnalyzers.CLI
             StyleCopJsonFilePath = CommandHelper.GetAbsoluteOrDefaultFilePath(StyleCopJsonFilePath, "./stylecop.json");
             TargetFileOrDirectory = CommandHelper.GetAbsolutePath(TargetFileOrDirectory);
 
-            stopwatch = Stopwatch.StartNew();
+            this.logger.LogDebug($"Arguments ============================");
+            this.logger.LogDebug($"ruleset : {RuleSetFilePath}");
+            this.logger.LogDebug($"stylecop.json : {RuleSetFilePath}");
+            this.logger.LogDebug($"format : {OutputFormat}");
+            this.logger.LogDebug($"check : {TargetFileOrDirectory}");
+            this.logger.LogDebug($"======================================");
 
             var inputKind = CommandHelper.GetInputKindFromFileOrDirectory(TargetFileOrDirectory);
             if (!inputKind.HasValue) { return; }
@@ -69,8 +74,6 @@ namespace StyleCopAnalyzers.CLI
 
             var writer = outputKind.ToWriter();
             writer.Write(diagnostics);
-
-            DebugTimeLog("Check Style Completed");
         }
     }
 }
