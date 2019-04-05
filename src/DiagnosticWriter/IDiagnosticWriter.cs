@@ -1,4 +1,4 @@
-namespace StyleCopAnalyzersCmd
+namespace StyleCopAnalyzers.CLI
 {
     using System.Collections.Immutable;
     using Microsoft.CodeAnalysis;

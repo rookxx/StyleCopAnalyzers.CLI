@@ -1,7 +1,7 @@
 #pragma warning disable CA1051
 #pragma warning disable CA1034
 
-namespace StyleCopAnalyzersCmd
+namespace StyleCopAnalyzers.CLI
 {
     using System;
     using Microsoft.CodeAnalysis;

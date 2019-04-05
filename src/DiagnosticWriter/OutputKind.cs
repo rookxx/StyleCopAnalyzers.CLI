@@ -1,4 +1,4 @@
-namespace StyleCopAnalyzersCmd
+namespace StyleCopAnalyzers.CLI
 {
     public enum OutputKind
     {

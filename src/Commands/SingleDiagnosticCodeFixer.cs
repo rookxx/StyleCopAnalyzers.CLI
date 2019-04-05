@@ -1,6 +1,6 @@
 
 
-namespace StyleCopAnalyzersCmd
+namespace StyleCopAnalyzers.CLI
 {
     using System;
     using System.Collections.Generic;

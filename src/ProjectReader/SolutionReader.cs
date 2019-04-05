@@ -1,4 +1,4 @@
-namespace StyleCopAnalyzersCmd
+namespace StyleCopAnalyzers.CLI
 {
     using System.Collections.Generic;
     using System.Collections.Immutable;
