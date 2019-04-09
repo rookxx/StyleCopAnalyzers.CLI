@@ -24,6 +24,7 @@
                     .MapResult(
                         async (StyleChecker style) =>
                         {
+                            style.SetLogger(logger);
                             await style.Check(cancellationTokenSource.Token).ConfigureAwait(false);
                         },
                         async (StyleFixer style) =>
