@@ -72,6 +72,12 @@ namespace StyleCopAnalyzers.CLI
 
             foreach (var analyzer in this.allAnalyzers)
             {
+                this.logger.LogVerbose("Analyze :" + string.Join(",", analyzer.SupportedDiagnostics.Select(d => d.Id)));
+                foreach(var descriptor in analyzer.SupportedDiagnostics)
+                {
+                    this.logger.LogVerbose(" " + descriptor.Description);
+                }
+
                 var projects = LoadProject(inputKind.Value);
                 if (projects.Length <= 0) { return; }
 
