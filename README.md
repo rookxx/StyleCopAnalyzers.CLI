@@ -6,8 +6,9 @@ StyleCop.Analyzers CLI tool
 ## Description
 `StyleCopAnalyzers.CLI` is a tool to check C# coding style with CLI, commit-hook, etc.
 
-## WIP
-Automatic code fix.
+## Requirement
+- .NET Core SDK or Runtime ver2.1 or higher.
+[.NET Core](https://dotnet.microsoft.com/download)
 
 ## Usage
 Execute by specifying solution file, csproj file and directory.
@@ -24,16 +25,19 @@ dotnet ./StyleCopAnalyzers.CLI.dll check -r stylecop.ruleset  [./ExampleDir or .
 
 - Specify a stylecop.json
 ```
-dotnet ./StyleCopAnalyzers.CLI.dll check -s stylecop.json  [./ExampleDir or ./Example.sln or ./Example.csproj]
+dotnet ./StyleCopAnalyzers.CLI.dll check -j stylecop.json  [./ExampleDir or ./Example.sln or ./Example.csproj]
 ```
 
 - Both ruleset and json can be specified
 ```
-dotnet ./StyleCopAnalyzers.CLI.dll check -s stylecop.json -r stylecop.ruleset [./ExampleDir or ./Example.sln or ./Example.csproj]
+dotnet ./StyleCopAnalyzers.CLI.dll check -j stylecop.json -r stylecop.ruleset [./ExampleDir or ./Example.sln or ./Example.csproj]
 ```
-- fix command is WIP
+- Fix Style
+```
+dotnet ./StyleCopAnalyzers.CLI.dll fix -j stylecop.json -r stylecop.ruleset [./ExampleDir or ./Example.sln or ./Example.csproj]
+```
 
-## Running Example
+## StyleCheck Running Example
 - Text
 ```
 # dotnet ./StyleCopAnalyzers.CLI.dll check ./TestCSharpCodes/
@@ -71,9 +75,14 @@ SA1101 : StyleCopAnalyzers.CLI/DiagnosticWriter/XmlWriter.cs : 33: Prefix local 
     </Violation>
 ```
 
-## Requirement
-- .NET Core SDK or Runtime ver2.1 or higher.
-[.NET Core](https://dotnet.microsoft.com/download)
+## Style Fix Running Example
+### CLI
+![CLI Example](https://github.com/rookxx/StyleCopAnalyzers.CLI/wiki/fix.gif)
+
+### Source Code difference
+![Diff1](https://github.com/rookxx/StyleCopAnalyzers.CLI/wiki/fixexample1.png)
+![Diff2](https://github.com/rookxx/StyleCopAnalyzers.CLI/wiki/fixexample2.png)
+![Diff3](https://github.com/rookxx/StyleCopAnalyzers.CLI/wiki/fixexample3.png)
 
 ## License
 
