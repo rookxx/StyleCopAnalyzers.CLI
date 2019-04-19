@@ -5,6 +5,8 @@ VisualStudioVersion = 15.0.26124.0
 MinimumVisualStudioVersion = 15.0.26124.0
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StyleCopAnalyzers.CLI", "src\StyleCopAnalyzers.CLI.csproj", "{981188D9-D181-4FC3-AC9A-A114DC09337F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StyleCopAnalyzers.CLI.tests", "tests\StyleCopAnalyzers.CLI.tests.csproj", "{B37BDBFE-4B42-42F5-B8D8-46572AF6977B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,5 +32,17 @@ Global
 		{981188D9-D181-4FC3-AC9A-A114DC09337F}.Release|x64.Build.0 = Release|Any CPU
 		{981188D9-D181-4FC3-AC9A-A114DC09337F}.Release|x86.ActiveCfg = Release|Any CPU
 		{981188D9-D181-4FC3-AC9A-A114DC09337F}.Release|x86.Build.0 = Release|Any CPU
+		{B37BDBFE-4B42-42F5-B8D8-46572AF6977B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B37BDBFE-4B42-42F5-B8D8-46572AF6977B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B37BDBFE-4B42-42F5-B8D8-46572AF6977B}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{B37BDBFE-4B42-42F5-B8D8-46572AF6977B}.Debug|x64.Build.0 = Debug|Any CPU
+		{B37BDBFE-4B42-42F5-B8D8-46572AF6977B}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{B37BDBFE-4B42-42F5-B8D8-46572AF6977B}.Debug|x86.Build.0 = Debug|Any CPU
+		{B37BDBFE-4B42-42F5-B8D8-46572AF6977B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B37BDBFE-4B42-42F5-B8D8-46572AF6977B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B37BDBFE-4B42-42F5-B8D8-46572AF6977B}.Release|x64.ActiveCfg = Release|Any CPU
+		{B37BDBFE-4B42-42F5-B8D8-46572AF6977B}.Release|x64.Build.0 = Release|Any CPU
+		{B37BDBFE-4B42-42F5-B8D8-46572AF6977B}.Release|x86.ActiveCfg = Release|Any CPU
+		{B37BDBFE-4B42-42F5-B8D8-46572AF6977B}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
