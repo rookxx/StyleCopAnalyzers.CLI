@@ -1,4 +1,3 @@
-
 namespace StyleCopAnalyzers.CLI
 {
     using System;
@@ -24,7 +23,9 @@ namespace StyleCopAnalyzers.CLI
         [Option('j', "json", Required = false, HelpText = "stylecop.json file path")]
         public string StyleCopJsonFilePath { get; set; }
         [Option('v', "verbose", Required = false)]
-        public bool LogLevelIsVerbose { get; set;}
+        public bool LogLevelIsVerbose { get; set; }
+        [Option('i', "id", Required = false)]
+        public string RuleSetId { get; set; }
         [Value(0, MetaName = "sln/csproj file path or directory path")]
         public string TargetFileOrDirectory { get; set; }
 
@@ -65,55 +66,92 @@ namespace StyleCopAnalyzers.CLI
                 this.logger.SetLogLevel(LogLevel.Verbose);
             }
 
+            var isSpecifiedRuleSetId = !string.IsNullOrEmpty(RuleSetId);
+            if (isSpecifiedRuleSetId)
+            {
+                RuleSetFilePath = null;
+                StyleCopJsonFilePath = null;
+            }
+
             Initialize();
 
             var inputKind = CommandHelper.GetInputKindFromFileOrDirectory(TargetFileOrDirectory);
             if (!inputKind.HasValue) { return; }
 
+            if (isSpecifiedRuleSetId)
+            {
+                await FixSingleDiagnostics(RuleSetId, inputKind.Value, cancellationToken);
+            }
+            else
+            {
+                await FixAllDiagnostics(inputKind.Value, cancellationToken).ConfigureAwait(false);
+            }
+        }
+
+        private async Task FixAllDiagnostics(InputKind inputKind, CancellationToken cancellationToken)
+        {
             foreach (var analyzer in this.allAnalyzers)
             {
-                this.logger.LogVerbose("Analyze :" + string.Join(",", analyzer.SupportedDiagnostics.Select(d => d.Id)));
-                foreach(var descriptor in analyzer.SupportedDiagnostics)
-                {
-                    this.logger.LogVerbose(" " + descriptor.Description);
-                }
+                await FixDiagnostic(analyzer, inputKind, cancellationToken).ConfigureAwait(false);
+            }
+        }
 
-                var projects = LoadProject(inputKind.Value);
-                if (projects.Length <= 0) { return; }
+        private async Task FixSingleDiagnostics(string rulesetId, InputKind inputKind, CancellationToken cancellationToken)
+        {
+            var analyzer = this.allAnalyzers.FirstOrDefault(
+                    a => a.SupportedDiagnostics.FirstOrDefault(d => { Console.WriteLine(d.Id); return d.Id == rulesetId; }) != null);
+            if (analyzer == null)
+            {
+                Console.WriteLine($"Not found or Not Supported rulesetId : {rulesetId}");
+                return;
+            }
 
-                var diagnostics = await CommandHelper.GetAnalyzerDiagnosticsAsync(
-                        projects,
-                        ImmutableArray.Create(analyzer),
-                        cancellationToken)
-                    .ConfigureAwait(false);
+            await FixDiagnostic(analyzer, inputKind, cancellationToken).ConfigureAwait(false);
+        }
 
-                if (diagnostics.Length <= 0)
-                {
-                    continue;
-                }
+        private async Task FixDiagnostic(DiagnosticAnalyzer analyzer, InputKind inputKind, CancellationToken cancellationToken)
+        {
+            this.logger.LogVerbose("Analyze :" + string.Join(",", analyzer.SupportedDiagnostics.Select(d => d.Id)));
+            foreach (var descriptor in analyzer.SupportedDiagnostics)
+            {
+                this.logger.LogVerbose(" " + descriptor.Description);
+            }
 
-                var fixableCodeFixProviders = GetFixableCodeFixProviders(diagnostics.Select(d => d.Id).ToImmutableArray());
-                if (fixableCodeFixProviders.Count() <= 0)
-                {
-                    this.logger.LogVerbose($"Not Fixed : {diagnostics[0].Location.SourceTree.FilePath}\n    {diagnostics[0].Id} {diagnostics[0].GetMessage()}\n    NotFound codeFixProvider");
-                    continue;
-                }
+            var projects = LoadProject(inputKind);
+            if (projects.Length <= 0) { return; }
 
-                try
+            var diagnostics = await CommandHelper.GetAnalyzerDiagnosticsAsync(
+                    projects,
+                    ImmutableArray.Create(analyzer),
+                    cancellationToken)
+                .ConfigureAwait(false);
+
+            if (diagnostics.Length <= 0)
+            {
+                return;
+            }
+
+            var fixableCodeFixProviders = GetFixableCodeFixProviders(diagnostics.Select(d => d.Id).ToImmutableArray());
+            if (fixableCodeFixProviders.Count() <= 0)
+            {
+                this.logger.LogVerbose($"Not Fixed : {diagnostics[0].Location.SourceTree.FilePath}\n    {diagnostics[0].Id} {diagnostics[0].GetMessage()}\n    NotFound codeFixProvider");
+                return;
+            }
+
+            try
+            {
+                this.logger.LogVerbose($"Try Fix : {diagnostics[0].Id} {diagnostics[0].GetMessage()}");
+                var fixedContexts = await FixDiagnosticsAsync(projects, diagnostics, fixableCodeFixProviders, cancellationToken);
+                var documentWriter = new FixedDocumentContextWriter() as IFixedContextWriter;
+                documentWriter.SetLogger(this.logger);
+                foreach (var context in fixedContexts)
                 {
-                    this.logger.LogVerbose($"Try Fix : {diagnostics[0].Id} {diagnostics[0].GetMessage()}");
-                    var fixedContexts = await FixDiagnosticsAsync(projects, diagnostics, fixableCodeFixProviders, cancellationToken);
-                    var documentWriter = new FixedDocumentContextWriter() as IFixedContextWriter;
-                    documentWriter.SetLogger(this.logger);
-                    foreach(var context in fixedContexts)
-                    {
-                        documentWriter.Write(context);
-                    }
+                    documentWriter.Write(context);
                 }
-                catch (Exception exception)
-                {
-                    Console.WriteLine(exception);
-                }
+            }
+            catch (Exception exception)
+            {
+                Console.WriteLine(exception);
             }
         }
 
