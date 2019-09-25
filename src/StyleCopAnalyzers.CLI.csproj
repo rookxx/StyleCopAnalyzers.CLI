@@ -23,7 +23,7 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="2.10.0" />
-    <PackageReference Include="StyleCop.Analyzers" Version="1.0.2">
+    <PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
@@ -37,10 +37,10 @@
 
   <ItemGroup>
     <Reference Include="StyleCop.Analyzers">
-      <HintPath>..\packages\stylecop.analyzers\1.0.2\analyzers\dotnet\cs\StyleCop.Analyzers.dll</HintPath>
+      <HintPath>..\packages\stylecop.analyzers\1.1.118\analyzers\dotnet\cs\StyleCop.Analyzers.dll</HintPath>
     </Reference>
     <Reference Include="StyleCop.Analyzers.CodeFixes">
-      <HintPath>..\packages\stylecop.analyzers\1.0.2\analyzers\dotnet\cs\StyleCop.Analyzers.CodeFixes.dll</HintPath>
+      <HintPath>..\packages\stylecop.analyzers\1.1.118\analyzers\dotnet\cs\StyleCop.Analyzers.CodeFixes.dll</HintPath>
     </Reference>
   </ItemGroup>
 </Project>
