@@ -5,6 +5,7 @@ namespace StyleCopAnalyzers.CLI
         Directory,
         Csproj,
         Sln,
+        CSharpFile,
     }
 
     public static class InputKindExtensions
@@ -16,6 +17,7 @@ namespace StyleCopAnalyzers.CLI
                 case InputKind.Directory: return new DirectoryFileReader();
                 case InputKind.Csproj: return new CSProjectReader();
                 case InputKind.Sln: return new SolutionReader();
+                case InputKind.CSharpFile : return new CSharpFileReader();
                 default: throw new System.ArgumentException($"Undefined inputKind [kind]");
             }
         }

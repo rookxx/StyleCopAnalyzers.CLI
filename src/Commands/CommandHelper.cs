@@ -55,8 +55,9 @@ namespace StyleCopAnalyzers.CLI
                 {
                     case ".csproj": return InputKind.Csproj;
                     case ".sln": return InputKind.Sln;
+                    case ".cs" : return InputKind.CSharpFile;
                     default:
-                        Console.Error.WriteLine($"Supported File Extension is .sln or .csproj only. {fileinfo.Extension}");
+                        Console.Error.WriteLine($"Supported File Extension is .sln, .csproj or .cs only. {fileinfo.Extension}");
                         return null;
                 }
             }
