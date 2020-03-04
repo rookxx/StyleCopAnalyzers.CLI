@@ -7,7 +7,7 @@ StyleCop.Analyzers CLI tool
 `StyleCopAnalyzers.CLI` is a tool to check C# coding style with CLI, commit-hook, etc.
 
 ## Requirement
-- .NET Core SDK or Runtime ver2.1 or higher.
+- .NET Core SDK or Runtime ver3.1 or higher.
 [.NET Core](https://dotnet.microsoft.com/download)
 
 ## Usage
