@@ -2,31 +2,27 @@
 namespace StyleCopAnalyzers.CLI
 {
     using System;
-    using System.Collections.Generic;
     using System.Collections.Immutable;
-    using System.Diagnostics;
     using System.IO;
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
     using CommandLine;
     using Microsoft.CodeAnalysis;
-    using Microsoft.CodeAnalysis.CodeActions;
     using Microsoft.CodeAnalysis.CodeFixes;
     using Microsoft.CodeAnalysis.Diagnostics;
-    using Microsoft.CodeAnalysis.Text;
 
     [Verb("fix", HelpText = "Fix C# Coding Style")]
     public class StyleFixer
     {
         [Option('r', "ruleset", Required = false, HelpText = "Ruleset file path.")]
-        public string RuleSetFilePath { get; set; }
+        public string RuleSetFilePath { get; set; } = string.Empty;
         [Option('j', "json", Required = false, HelpText = "stylecop.json file path")]
-        public string StyleCopJsonFilePath { get; set; }
+        public string StyleCopJsonFilePath { get; set; } = string.Empty;
         [Option('v', "verbose", Required = false)]
-        public bool LogLevelIsVerbose { get; set;}
+        public bool LogLevelIsVerbose { get; set; }
         [Value(0, MetaName = "sln/csproj file path or directory path")]
-        public string TargetFileOrDirectory { get; set; }
+        public string TargetFileOrDirectory { get; set; } = string.Empty;
 
         private ImmutableArray<CodeFixProvider> allCodeFixProviders;
         private ImmutableArray<DiagnosticAnalyzer> allAnalyzers;
@@ -53,12 +49,12 @@ namespace StyleCopAnalyzers.CLI
             StyleCopJsonFilePath = CommandHelper.GetAbsoluteOrDefaultFilePath(StyleCopJsonFilePath, "./stylecop.json");
             TargetFileOrDirectory = CommandHelper.GetAbsolutePath(TargetFileOrDirectory);
 
-            this.logger.LogDebug($"Arguments ============================");
+            this.logger.LogDebug("Arguments ============================");
             this.logger.LogDebug($"Verbose Log : {LogLevelIsVerbose}");
             this.logger.LogDebug($"ruleset : {RuleSetFilePath}");
             this.logger.LogDebug($"stylecop.json : {RuleSetFilePath}");
             this.logger.LogDebug($"fix : {TargetFileOrDirectory}");
-            this.logger.LogDebug($"======================================");
+            this.logger.LogDebug("======================================");
 
             if (LogLevelIsVerbose)
             {
@@ -73,13 +69,13 @@ namespace StyleCopAnalyzers.CLI
             foreach (var analyzer in this.allAnalyzers)
             {
                 this.logger.LogVerbose("Analyze :" + string.Join(",", analyzer.SupportedDiagnostics.Select(d => d.Id)));
-                foreach(var descriptor in analyzer.SupportedDiagnostics)
+                foreach (var descriptor in analyzer.SupportedDiagnostics)
                 {
                     this.logger.LogVerbose(" " + descriptor.Description);
                 }
 
                 var projects = LoadProject(inputKind.Value);
-                if (projects.Length <= 0) { return; }
+                if (projects.IsDefaultOrEmpty) { return; }
 
                 var diagnostics = await CommandHelper.GetAnalyzerDiagnosticsAsync(
                         projects,
@@ -87,25 +83,25 @@ namespace StyleCopAnalyzers.CLI
                         cancellationToken)
                     .ConfigureAwait(false);
 
-                if (diagnostics.Length <= 0)
+                if (diagnostics.IsDefaultOrEmpty)
                 {
                     continue;
                 }
 
                 var fixableCodeFixProviders = GetFixableCodeFixProviders(diagnostics.Select(d => d.Id).ToImmutableArray());
-                if (fixableCodeFixProviders.Count() <= 0)
+                if (fixableCodeFixProviders.IsDefaultOrEmpty)
                 {
-                    this.logger.LogVerbose($"Not Fixed : {diagnostics[0].Location.SourceTree.FilePath}\n    {diagnostics[0].Id} {diagnostics[0].GetMessage()}\n    NotFound codeFixProvider");
+                    this.logger.LogVerbose($"Not Fixed : {diagnostics[0].Location.SourceTree?.FilePath}\n    {diagnostics[0].Id} {diagnostics[0].GetMessage()}\n    NotFound codeFixProvider");
                     continue;
                 }
 
                 try
                 {
                     this.logger.LogVerbose($"Try Fix : {diagnostics[0].Id} {diagnostics[0].GetMessage()}");
-                    var fixedContexts = await FixDiagnosticsAsync(projects, diagnostics, fixableCodeFixProviders, cancellationToken);
+                    var fixedContexts = await FixDiagnosticsAsync(projects, diagnostics, fixableCodeFixProviders, cancellationToken).ConfigureAwait(false);
                     var documentWriter = new FixedDocumentContextWriter() as IFixedContextWriter;
                     documentWriter.SetLogger(this.logger);
-                    foreach(var context in fixedContexts)
+                    foreach (var context in fixedContexts)
                     {
                         documentWriter.Write(context);
                     }
@@ -130,10 +126,10 @@ namespace StyleCopAnalyzers.CLI
                     var doc = project.Solution.GetDocument(syntaxTree);
                     if (doc != null) { return doc; }
                 }
-                return null;
+                throw new ArgumentException();
             };
 
-            var group = diagnostics.GroupBy(d => d.Location.SourceTree.FilePath);
+            var group = diagnostics.GroupBy(d => d.Location.SourceTree?.FilePath);
 
             var fixedContexts = ImmutableArray.CreateBuilder<FixedDocumentContext>();
             try
@@ -143,11 +139,12 @@ namespace StyleCopAnalyzers.CLI
                     foreach (var groupingDiagnostics in group)
                     {
                         var fixDiagnostics = groupingDiagnostics.ToImmutableArray();
-                        var syntaxTree = fixDiagnostics.First().Location.SourceTree;
+                        var syntaxTree = fixDiagnostics[0].Location.SourceTree;
+                        if (syntaxTree == null) { continue; }
 
                         var oldDocument = getDocument(syntaxTree);
                         var codeFixer = new SingleDiagnosticCodeFixer(oldDocument, fixDiagnostics, codeFixProvider);
-                        var fixedResult = await codeFixer.FixCode(cancellationToken);
+                        var fixedResult = await codeFixer.FixCode(cancellationToken).ConfigureAwait(false);
 
                         fixedContexts.Add(new FixedDocumentContext(oldDocument, fixedResult));
                     }
@@ -180,16 +177,6 @@ namespace StyleCopAnalyzers.CLI
                 return false;
             })
             .ToImmutableArray();
-        }
-
-        private async Task<string> WriteCodeTextAsync(Document document)
-        {
-            var path = document.FilePath;
-            var text = await document.GetTextAsync();
-
-            File.WriteAllText(path, text.ToString());
-
-            return text.ToString();
         }
     }
 }

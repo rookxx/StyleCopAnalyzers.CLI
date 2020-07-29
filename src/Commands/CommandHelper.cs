@@ -24,7 +24,7 @@ namespace StyleCopAnalyzers.CLI
             }
             else
             {
-                return Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, defaultPath);
+                return Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory!, defaultPath);
             }
         }
 
@@ -37,7 +37,7 @@ namespace StyleCopAnalyzers.CLI
             foreach (var project in projects)
             {
                 var compilation = await project.GetCompilationAsync(cancellationToken).ConfigureAwait(false);
-                var compilationWithAnalyzers = compilation.WithAnalyzers(analyzers, project.AnalyzerOptions);
+                var compilationWithAnalyzers = compilation!.WithAnalyzers(analyzers, project.AnalyzerOptions);
                 var diagnostics = await compilationWithAnalyzers.GetAnalyzerDiagnosticsAsync(cancellationToken).ConfigureAwait(false);
 
                 diagnosticsAll.AddRange(diagnostics);
@@ -55,7 +55,7 @@ namespace StyleCopAnalyzers.CLI
                 {
                     case ".csproj": return InputKind.Csproj;
                     case ".sln": return InputKind.Sln;
-                    case ".cs" : return InputKind.CSharpFile;
+                    case ".cs": return InputKind.CSharpFile;
                     default:
                         Console.Error.WriteLine($"Supported File Extension is .sln, .csproj or .cs only. {fileinfo.Extension}");
                         return null;

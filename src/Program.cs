@@ -9,7 +9,7 @@
     {
         static async Task Main(string[] args)
         {
-            CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+            var cancellationTokenSource = new CancellationTokenSource();
             Console.CancelKeyPress +=
                 (sender, e) =>
                 {
@@ -32,17 +32,16 @@
                             style.SetLogger(logger);
                             await style.FixCode(cancellationTokenSource.Token).ConfigureAwait(false);
                         },
-                        async er =>
-                        {
-                            await Task.Yield();
-                        })
+                        async _ => await Task.Yield())
                     .ConfigureAwait(false);
             }
             catch (Exception exception)
             {
                 logger.LogError(exception.Message);
-                logger.LogError(exception.StackTrace);
+                logger.LogError(exception.StackTrace!);
             }
+
+            cancellationTokenSource.Dispose();
         }
     }
 }

@@ -1,5 +1,5 @@
-#pragma warning disable CA1051
-#pragma warning disable CA1034
+#nullable disable
+#pragma warning disable CA1051, CA1034
 
 namespace StyleCopAnalyzers.CLI
 {
@@ -18,38 +18,37 @@ namespace StyleCopAnalyzers.CLI
         {
             public class Violation
             {
-                [XmlAttribute] public string Section;
+                [XmlAttribute] public string Section = string.Empty;
                 [XmlAttribute] public int LineNumber;
-                [XmlAttribute] public string Source;
-                [XmlAttribute] public string RuleNamespace;
-                [XmlAttribute] public string Rule;
-                [XmlAttribute] public string RuleId;
-                public string Message;
+                [XmlAttribute] public string Source = string.Empty;
+                [XmlAttribute] public string RuleNamespace = string.Empty;
+                [XmlAttribute] public string Rule = string.Empty;
+                [XmlAttribute] public string RuleId = string.Empty;
+                public string Message = string.Empty;
 
                 public Violation() { }
 
                 public Violation(Diagnostic diagnostic)
                 {
+                    if (diagnostic == null) { throw new ArgumentException(); }
                     Rule = diagnostic.Id;
                     Message = diagnostic.GetMessage();
                     LineNumber = diagnostic.Location.GetLineSpan().Span.Start.Line + 1;
                     Source = diagnostic.Location.GetLineSpan().Path;
                     RuleNamespace = diagnostic.Descriptor.Category;
 
-                    var classDeclarationSyntax = diagnostic.Location.SourceTree.GetRoot().DescendantNodes().OfType<ClassDeclarationSyntax>().FirstOrDefault();
-                    NamespaceDeclarationSyntax namespaceDeclarationSyntax = null;
-                    if (!SyntaxNodeHelper.TryGetParentSyntax(classDeclarationSyntax, out namespaceDeclarationSyntax))
+                    var classDeclarationSyntax = diagnostic.Location.SourceTree!.GetRoot().DescendantNodes().OfType<ClassDeclarationSyntax>().FirstOrDefault();
+                    if (!SyntaxNodeHelper.TryGetParentSyntax(classDeclarationSyntax, out NamespaceDeclarationSyntax namespaceDeclarationSyntax))
                     {
                         return;
                     }
 
                     var namespaceName = namespaceDeclarationSyntax.Name.ToString();
-                    var fullClassName = namespaceName + "." + classDeclarationSyntax.Identifier.ToString();
-                    Section = fullClassName;
+                    Section = namespaceName + "." + classDeclarationSyntax.Identifier.ToString();
                 }
             }
 
-            public Violation[] Violations;
+            public Violation[] Violations = Array.Empty<Violation>();
 
             public StyleCopViolations() { }
 
@@ -62,14 +61,16 @@ namespace StyleCopAnalyzers.CLI
         void IDiagnosticWriter.Write(ImmutableArray<Diagnostic> diagnostics)
         {
             var serializer = new XmlSerializer(typeof(StyleCopViolations));
-            var sw = new StreamWriter(Console.OpenStandardOutput());
-            sw.AutoFlush = true;
+            using var sw = new StreamWriter(Console.OpenStandardOutput())
+            {
+                AutoFlush = true
+            };
             Console.SetOut(sw);
 
             serializer.Serialize(sw, new StyleCopViolations(diagnostics));
         }
 
-        static class SyntaxNodeHelper
+        private static class SyntaxNodeHelper
         {
             public static bool TryGetParentSyntax<T>(SyntaxNode syntaxNode, out T result)
                 where T : SyntaxNode
@@ -79,7 +80,7 @@ namespace StyleCopAnalyzers.CLI
 
                 try
                 {
-                    syntaxNode = syntaxNode.Parent;
+                    syntaxNode = syntaxNode.Parent!;
                     if (syntaxNode == null) { return false; }
 
                     if (syntaxNode.GetType() == typeof(T))
@@ -98,5 +99,5 @@ namespace StyleCopAnalyzers.CLI
         }
     }
 }
-#pragma warning restore CA1051
-#pragma warning disable CA1034
+#pragma warning restore CA1051, CA1034
+#nullable enable

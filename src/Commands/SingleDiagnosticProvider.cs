@@ -16,12 +16,12 @@ namespace StyleCopAnalyzers.CLI
     public class DocumentSingleDiagnotsticProvider : FixAllContext.DiagnosticProvider
     {
         private ImmutableArray<Diagnostic> diagnostics;
-        private List<CodeAction> codeActions;
+        private readonly List<CodeAction> codeActions = new List<CodeAction>();
 
         public DocumentSingleDiagnotsticProvider(ImmutableArray<Diagnostic> diagnostics)
         {
-            if (diagnostics.Length <= 0 ||
-                diagnostics.Where(d => d.Id != diagnostics[0].Id).Count() != 0)
+            if (diagnostics.Length == 0 ||
+                diagnostics.Any(d => d.Id != diagnostics[0].Id))
             {
                 throw new System.ArgumentException();
             }
@@ -31,15 +31,19 @@ namespace StyleCopAnalyzers.CLI
 
         public async Task<string> GetEquivalenceKeyAsync(CodeFixProvider codeFixProvider, Document document, CancellationToken cancellationToken)
         {
-            this.codeActions = new List<CodeAction>();
-            await codeFixProvider.RegisterCodeFixesAsync(new CodeFixContext(document, this.diagnostics[0], (a, d) => codeActions.Add(a), cancellationToken)).ConfigureAwait(false);
+            if (codeFixProvider == null) { throw new System.ArgumentException(); }
 
-            return codeActions.Count > 0 ? codeActions[0].EquivalenceKey : string.Empty;
+            this.codeActions.Clear();
+            await codeFixProvider
+                .RegisterCodeFixesAsync(new CodeFixContext(document, this.diagnostics[0], (a, _) => codeActions.Add(a), cancellationToken))
+                .ConfigureAwait(false);
+
+            return codeActions.Count > 0 ? codeActions[0].EquivalenceKey! : string.Empty;
         }
 
         public override Task<IEnumerable<Diagnostic>> GetDocumentDiagnosticsAsync(Document document, CancellationToken cancellationToken)
         {
-            return Task.FromResult(diagnostics.Where(d => d.Location.SourceTree.FilePath == document.FilePath));
+            return Task.FromResult(diagnostics.Where(d => d.Location.SourceTree?.FilePath == document.FilePath));
         }
 
         public override Task<IEnumerable<Diagnostic>> GetProjectDiagnosticsAsync(Project project, CancellationToken cancellationToken)

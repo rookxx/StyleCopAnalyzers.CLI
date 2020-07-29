@@ -12,14 +12,14 @@ namespace StyleCopAnalyzers.CLI
     {
         public static IProjectReader ToReader(this InputKind kind)
         {
-            switch (kind)
+            return kind switch
             {
-                case InputKind.Directory: return new DirectoryFileReader();
-                case InputKind.Csproj: return new CSProjectReader();
-                case InputKind.Sln: return new SolutionReader();
-                case InputKind.CSharpFile : return new CSharpFileReader();
-                default: throw new System.ArgumentException($"Undefined inputKind [kind]");
-            }
+                InputKind.Directory => new DirectoryFileReader(),
+                InputKind.Csproj => new CSProjectReader(),
+                InputKind.Sln => new SolutionReader(),
+                InputKind.CSharpFile => new CSharpFileReader(),
+                _ => throw new System.ArgumentException($"Undefined inputKind [{kind}]"),
+            };
         }
     }
 }

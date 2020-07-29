@@ -25,8 +25,6 @@ namespace StyleCopAnalyzers.CLI
                 return ImmutableArray<Project>.Empty;
             }
 
-            var syntaxTrees = new List<SyntaxTree>();
-
             MSBuildLocator.RegisterDefaults();
             MSBuildWorkspace workspace = MSBuildWorkspace.Create();
             var project = workspace.OpenProjectAsync(csprojFilePath).Result;
@@ -37,9 +35,9 @@ namespace StyleCopAnalyzers.CLI
                     .Project;
             }
 
-            var projects = ImmutableArray.Create(project);
+            workspace.Dispose();
 
-            return projects;
+            return ImmutableArray.Create(project);
         }
     }
 }

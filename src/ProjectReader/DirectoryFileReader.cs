@@ -60,9 +60,8 @@ namespace StyleCopAnalyzers.CLI
                     .Project;
             }
 
-            var projects = ImmutableArray.Create(project);
-
-            return projects;
+            workspace.Dispose();
+            return ImmutableArray.Create(project);
         }
     }
 }

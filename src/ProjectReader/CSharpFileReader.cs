@@ -32,8 +32,6 @@ namespace StyleCopAnalyzers.CLI
                 return ImmutableArray<Project>.Empty;
             }
 
-            var syntaxTrees = new List<SyntaxTree>();
-
             if (!MSBuildLocator.IsRegistered)
             {
                 MSBuildLocator.RegisterDefaults();
@@ -43,11 +41,9 @@ namespace StyleCopAnalyzers.CLI
             var solution = workspace.CurrentSolution;
             var project = solution.AddProject("Temp", "Temp", "C#");
 
-            var lockObj = new object();
-
             var fileText = CSharpSyntaxTree.ParseText(File.ReadAllText(fileInfo.FullName), null, fileInfo.FullName);
 
-                project = project.AddDocument(fileInfo.Name, fileText.GetRoot(), null, fileInfo.FullName)
+            project = project.AddDocument(fileInfo.Name, fileText.GetRoot(), null, fileInfo.FullName)
                     .Project;
 
             if (!string.IsNullOrEmpty(stylecopJsonFile) && File.Exists(stylecopJsonFile))
@@ -55,10 +51,9 @@ namespace StyleCopAnalyzers.CLI
                 project = project.AddAdditionalDocument("stylecop.json", SourceText.From(File.ReadAllText(stylecopJsonFile)))
                     .Project;
             }
+            workspace.Dispose();
 
-            var projects = ImmutableArray.Create(project);
-
-            return projects;
+            return ImmutableArray.Create(project);
         }
     }
 }
