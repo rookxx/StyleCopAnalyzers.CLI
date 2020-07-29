@@ -15,7 +15,7 @@ namespace StyleCopAnalyzers.CLI
         private const string StyleCopAnalyzersDll = "StyleCop.Analyzers";
         private const string StyleCopAnalyzersCodeFixesDll = "StyleCop.Analyzers.CodeFixes";
 
-        private Dictionary<string, ReportDiagnostic> rulesets = new Dictionary<string, ReportDiagnostic>();
+        private readonly Dictionary<string, ReportDiagnostic> rulesets = new Dictionary<string, ReportDiagnostic>();
 
         public AnalyzerLoader(string ruleSetFilePath)
         {
@@ -31,7 +31,8 @@ namespace StyleCopAnalyzers.CLI
         {
             var name = new AssemblyName(StyleCopAnalyzersDll);
             var stylecop = AssemblyLoadContext.Default.LoadFromAssemblyName(name);
-            var assembly = stylecop.GetType("StyleCop.Analyzers.NoCodeFixAttribute").Assembly;
+            var assembly = stylecop.GetType("StyleCop.Analyzers.NoCodeFixAttribute")?.Assembly;
+            if (assembly == null) { return default; }
 
             var diagnosticAnalyzerType = typeof(DiagnosticAnalyzer);
 
@@ -43,14 +44,16 @@ namespace StyleCopAnalyzers.CLI
                 {
                     continue;
                 }
-
-                var analyzer = (DiagnosticAnalyzer)Activator.CreateInstance(type);
+                if (!(Activator.CreateInstance(type) is DiagnosticAnalyzer analyzer))
+                {
+                    continue;
+                }
                 if (!IsValidAnalyzer(analyzer, rulesets))
                 {
                     continue;
                 }
 
-                analyzers.Add(analyzer);
+                analyzers.Add(analyzer!);
             }
 
             return analyzers.ToImmutable();
@@ -72,7 +75,11 @@ namespace StyleCopAnalyzers.CLI
                     continue;
                 }
 
-                var codeFixProvider = (CodeFixProvider)Activator.CreateInstance(type);
+                if (!(Activator.CreateInstance(type) is CodeFixProvider codeFixProvider))
+                {
+                    continue;
+                }
+
                 if (!IsValidCodeFixProvider(codeFixProvider, rulesets))
                 {
                     continue;

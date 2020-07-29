@@ -21,14 +21,14 @@ namespace StyleCopAnalyzers.CLI
             WriteChangedDocuments(context.FixedResult.ChangedDocuments);
 
             var directoryPath = Path.GetDirectoryName(context.Document.FilePath);
-            AddNewDocuments(directoryPath, context.FixedResult.AddedDocuments);
+            AddNewDocuments(directoryPath!, context.FixedResult.AddedDocuments);
 
             RemoveDocuments(context.FixedResult.RemovedDocuments);
         }
 
         private void WriteChangedDocuments(ImmutableArray<Document> documents)
         {
-            foreach(var document in documents)
+            foreach (var document in documents)
             {
                 var path = document.FilePath;
                 var text = document.GetTextAsync().Result;
@@ -39,7 +39,7 @@ namespace StyleCopAnalyzers.CLI
 
         private void AddNewDocuments(string directoryPath, ImmutableArray<Document> documents)
         {
-            foreach(var document in documents)
+            foreach (var document in documents)
             {
                 var fileName = document.Name;
                 var path = Path.Combine(directoryPath, fileName);
@@ -51,7 +51,7 @@ namespace StyleCopAnalyzers.CLI
 
         private void RemoveDocuments(ImmutableArray<Document> documents)
         {
-            foreach(var document in documents)
+            foreach (var document in documents)
             {
                 this.logger.LogVerbose("        Removed:" + document.FilePath);
                 File.Delete(document.FilePath);

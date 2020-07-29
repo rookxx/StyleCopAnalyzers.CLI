@@ -15,15 +15,15 @@ namespace StyleCopAnalyzers.CLI
     public class StyleChecker
     {
         [Option('r', "ruleset", Required = false, HelpText = "Ruleset file path.")]
-        public string RuleSetFilePath { get; set; }
+        public string RuleSetFilePath { get; set; } = string.Empty;
         [Option('j', "json", Required = false, HelpText = "stylecop.json file path")]
-        public string StyleCopJsonFilePath { get; set; }
+        public string StyleCopJsonFilePath { get; set; } = string.Empty;
         [Option('f', "format", Required = false, Default = "text", HelpText = "output format\n    text raw text\n    xml  legacy stylecop xml format")]
-        public string OutputFormat { get; set; }
+        public string OutputFormat { get; set; } = string.Empty;
         [Value(0, MetaName = "sln/csproj file path or directory path")]
-        public string TargetFileOrDirectory { get; set; }
+        public string TargetFileOrDirectory { get; set; } = string.Empty;
 
-        private ILogger logger;
+        private ILogger logger = new SilentLogger();
 
         public StyleChecker()
         {
@@ -34,13 +34,13 @@ namespace StyleCopAnalyzers.CLI
             this.logger = logger;
         }
 
-        private Stopwatch stopwatch;
+        // private readonly Stopwatch stopwatch = new Stopwatch();
 
-        [Conditional("DEBUG")]
-        private void DebugTimeLog(string message)
-        {
-            this.logger.LogDebug($"{message} in {stopwatch.ElapsedMilliseconds}ms");
-        }
+        // [Conditional("DEBUG")]
+        // private void DebugTimeLog(string message)
+        // {
+        //     this.logger.LogDebug($"{message} in {stopwatch.ElapsedMilliseconds}ms");
+        // }
 
         public async Task Check(CancellationToken cancellationToken)
         {
@@ -48,18 +48,18 @@ namespace StyleCopAnalyzers.CLI
             StyleCopJsonFilePath = CommandHelper.GetAbsoluteOrDefaultFilePath(StyleCopJsonFilePath, "./stylecop.json");
             TargetFileOrDirectory = CommandHelper.GetAbsolutePath(TargetFileOrDirectory);
 
-            this.logger.LogDebug($"Arguments ============================");
+            this.logger.LogDebug("Arguments ============================");
             this.logger.LogDebug($"ruleset : {RuleSetFilePath}");
             this.logger.LogDebug($"stylecop.json : {RuleSetFilePath}");
             this.logger.LogDebug($"format : {OutputFormat}");
             this.logger.LogDebug($"check : {TargetFileOrDirectory}");
-            this.logger.LogDebug($"======================================");
+            this.logger.LogDebug("======================================");
 
             var inputKind = CommandHelper.GetInputKindFromFileOrDirectory(TargetFileOrDirectory);
             if (!inputKind.HasValue) { return; }
 
             var projects = inputKind.Value.ToReader().ReadAllSourceCodeFiles(TargetFileOrDirectory, StyleCopJsonFilePath);
-            if (projects.Length <= 0) { return; }
+            if (projects.Length == 0) { return; }
 
             var outputKind = OutputKindHelper.ToOutputKind(OutputFormat);
             if (outputKind == OutputKind.Undefined)

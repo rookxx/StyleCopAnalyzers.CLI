@@ -1,5 +1,4 @@
 
-
 namespace StyleCopAnalyzers.CLI
 {
     using System;
@@ -14,14 +13,14 @@ namespace StyleCopAnalyzers.CLI
 
     public class SingleDiagnosticCodeFixer
     {
-        private Document document;
+        private readonly Document document;
+        private readonly CodeFixProvider codeFixProvider;
         private ImmutableArray<Diagnostic> diagnostics;
-        private CodeFixProvider codeFixProvider;
 
         public string DiagnosticId => diagnostics[0].Id;
         public IEnumerable<string> DiagnosticIds => new List<string> { diagnostics[0].Id };
 
-        public struct FixedResult
+        public struct FixedResult : IEquatable<FixedResult>
         {
             public readonly ImmutableArray<Document> AddedDocuments;
             public readonly ImmutableArray<Document> ChangedDocuments;
@@ -44,12 +43,37 @@ namespace StyleCopAnalyzers.CLI
                 ChangedDocuments = changedDocuments;
                 RemovedDocuments = removedDocuments;
             }
+
+            public override bool Equals(object obj)
+            {
+                return obj is FixedResult result && Equals(result);
+            }
+
+            public bool Equals(FixedResult other)
+            {
+                return RemovedDocuments.Equals(other.RemovedDocuments);
+            }
+
+            public override int GetHashCode()
+            {
+                return HashCode.Combine(RemovedDocuments);
+            }
+
+            public static bool operator ==(FixedResult left, FixedResult right)
+            {
+                return left.Equals(right);
+            }
+
+            public static bool operator !=(FixedResult left, FixedResult right)
+            {
+                return !(left == right);
+            }
         }
 
         public SingleDiagnosticCodeFixer(Document document, ImmutableArray<Diagnostic> diagnostics, CodeFixProvider codeFixProvider)
         {
-            if (diagnostics.Length <= 0 ||
-                diagnostics.Where(d => d.Id != diagnostics[0].Id).Count() != 0)
+            if (diagnostics.IsDefaultOrEmpty ||
+                diagnostics.Any(d => d.Id != diagnostics[0].Id))
             {
                 throw new System.ArgumentException();
             }
@@ -64,11 +88,11 @@ namespace StyleCopAnalyzers.CLI
             var fixAllProvider = this.codeFixProvider.GetFixAllProvider();
             if (fixAllProvider != null)
             {
-                return await FixCodeAllDiagnostics(this.codeFixProvider.GetFixAllProvider(), cancellationToken);
+                return await FixCodeAllDiagnostics(this.codeFixProvider.GetFixAllProvider(), cancellationToken).ConfigureAwait(false);
             }
             else
             {
-                return await FixCodeSingleDiagnostics(cancellationToken);
+                return await FixCodeSingleDiagnostics(cancellationToken).ConfigureAwait(false);
             }
         }
 
@@ -80,7 +104,7 @@ namespace StyleCopAnalyzers.CLI
                 document,
                 codeFixProvider,
                 FixAllScope.Document,
-                await diagnosticsProvider.GetEquivalenceKeyAsync(codeFixProvider, document, cancellationToken),
+                await diagnosticsProvider.GetEquivalenceKeyAsync(codeFixProvider, document, cancellationToken).ConfigureAwait(false),
                 DiagnosticIds,
                 diagnosticsProvider,
                 cancellationToken);
@@ -93,7 +117,7 @@ namespace StyleCopAnalyzers.CLI
             }
 
             var oldSolution = document.Project.Solution;
-            var changedDocument = await ConvertCodeActionToChangedDocument(action, cancellationToken);
+            var changedDocument = await ConvertCodeActionToChangedDocument(action, cancellationToken).ConfigureAwait(false);
 
             return GetFixedChanges(oldSolution, changedDocument.Project.Solution);
         }
@@ -101,15 +125,15 @@ namespace StyleCopAnalyzers.CLI
         private async Task<FixedResult> FixCodeSingleDiagnostics(CancellationToken cancellationToken)
         {
             var codeActions = new List<CodeAction>();
-            await codeFixProvider.RegisterCodeFixesAsync(new CodeFixContext(document, this.diagnostics[0], (a, d) => codeActions.Add(a), cancellationToken)).ConfigureAwait(false);
+            await codeFixProvider.RegisterCodeFixesAsync(new CodeFixContext(document, this.diagnostics[0], (a, _) => codeActions.Add(a), cancellationToken)).ConfigureAwait(false);
 
-            if (codeActions.Count <= 0)
+            if (codeActions.Count == 0)
             {
                 return FixedResult.Empty;
             }
 
             var oldSolution = document.Project.Solution;
-            var changedDocument = await ConvertCodeActionToChangedDocument(codeActions.First(), cancellationToken);
+            var changedDocument = await ConvertCodeActionToChangedDocument(codeActions[0], cancellationToken).ConfigureAwait(false);
 
             return GetFixedChanges(oldSolution, changedDocument.Project.Solution);
         }
@@ -118,14 +142,14 @@ namespace StyleCopAnalyzers.CLI
         {
             var solutionChanges = solutionNew.GetChanges(solutionOld);
             var projectChanges = solutionChanges.GetProjectChanges();
-            if (projectChanges.Count() <= 0)
+            if (!projectChanges.Any())
             {
                 return FixedResult.Empty;
             }
 
             Func<DocumentId, Document> getDocumentFromNewSolution = (id) =>
             {
-                foreach(var project in solutionNew.Projects)
+                foreach (var project in solutionNew.Projects)
                 {
                     var document = project.GetDocument(id);
                     if (document != null)
@@ -133,7 +157,7 @@ namespace StyleCopAnalyzers.CLI
                         return document;
                     }
                 }
-                return null;
+                throw new System.ArgumentException("getDocumentFromNewSolution");
             };
 
             var changedDocuments = projectChanges
@@ -157,25 +181,20 @@ namespace StyleCopAnalyzers.CLI
         private async Task<Document> ConvertCodeActionToChangedDocument(CodeAction action, CancellationToken cancellationToken)
         {
             var operations = await action.GetOperationsAsync(cancellationToken).ConfigureAwait(false);
-            if (operations == null)
+            if (operations.Length > 1)
             {
-                return document;
-            }
-            if (operations.Count() > 1)
-            {
-                Console.WriteLine($"{DiagnosticId} : Only single operation is supported. Operation count = {operations.Count()} : {document.FilePath}");
+                Console.WriteLine($"{DiagnosticId} : Only single operation is supported. Operation count = {operations.Length} : {document.FilePath}");
                 return document;
             }
 
-            var applyOperation = operations.First() as ApplyChangesOperation;
-            if (applyOperation == null)
+            if (!(operations[0] is ApplyChangesOperation applyOperation))
             {
                 return document;
             }
 
             var changedDocument = applyOperation.ChangedSolution?.Projects?.First()?.GetDocument(document.Id);
 
-            return changedDocument != null ? changedDocument : document;
+            return changedDocument ?? document;
         }
     }
 }

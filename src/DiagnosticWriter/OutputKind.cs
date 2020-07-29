@@ -11,12 +11,12 @@ namespace StyleCopAnalyzers.CLI
     {
         public static IDiagnosticWriter ToWriter(this OutputKind kind)
         {
-            switch (kind)
+            return kind switch
             {
-                case OutputKind.RawText: return new ConsoleWriter();
-                case OutputKind.LegacyStyleCopXml: return new XmlWriter();
-                default: throw new System.ArgumentException($"Undefined outputKind [kind]");
-            }
+                OutputKind.RawText => new ConsoleWriter(),
+                OutputKind.LegacyStyleCopXml => new XmlWriter(),
+                _ => throw new System.ArgumentException($"Undefined outputKind [{kind}]"),
+            };
         }
     }
 
@@ -24,12 +24,12 @@ namespace StyleCopAnalyzers.CLI
     {
         public static OutputKind ToOutputKind(string kindString)
         {
-            switch (kindString)
+            return kindString switch
             {
-                case "text": return OutputKind.RawText;
-                case "xml": return OutputKind.LegacyStyleCopXml;
-                default: return OutputKind.Undefined;
-            }
+                "text" => OutputKind.RawText,
+                "xml" => OutputKind.LegacyStyleCopXml,
+                _ => OutputKind.Undefined,
+            };
         }
     }
 }
