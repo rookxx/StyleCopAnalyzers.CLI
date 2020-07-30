@@ -2,6 +2,7 @@
 namespace StyleCopAnalyzers.CLI
 {
     using System;
+    using System.Collections.Generic;
     using System.Collections.Immutable;
     using System.IO;
     using System.Linq;
@@ -21,8 +22,8 @@ namespace StyleCopAnalyzers.CLI
         public string StyleCopJsonFilePath { get; set; } = string.Empty;
         [Option('v', "verbose", Required = false)]
         public bool LogLevelIsVerbose { get; set; }
-        [Value(0, MetaName = "sln/csproj file path or directory path")]
-        public string TargetFileOrDirectory { get; set; } = string.Empty;
+        [Value(0, MetaName = "sln/csproj file path, directory path or file path")]
+        public IEnumerable<string> Targets { get; set; }
 
         private ImmutableArray<CodeFixProvider> allCodeFixProviders;
         private ImmutableArray<DiagnosticAnalyzer> allAnalyzers;
@@ -47,13 +48,17 @@ namespace StyleCopAnalyzers.CLI
         {
             RuleSetFilePath = CommandHelper.GetAbsoluteOrDefaultFilePath(RuleSetFilePath, "./stylecop.ruleset");
             StyleCopJsonFilePath = CommandHelper.GetAbsoluteOrDefaultFilePath(StyleCopJsonFilePath, "./stylecop.json");
-            TargetFileOrDirectory = CommandHelper.GetAbsolutePath(TargetFileOrDirectory);
+
+            if (!Targets.Any())
+            {
+                return;
+            }
 
             this.logger.LogDebug("Arguments ============================");
             this.logger.LogDebug($"Verbose Log : {LogLevelIsVerbose}");
             this.logger.LogDebug($"ruleset : {RuleSetFilePath}");
             this.logger.LogDebug($"stylecop.json : {RuleSetFilePath}");
-            this.logger.LogDebug($"fix : {TargetFileOrDirectory}");
+            this.logger.LogDebug($"fix : \n{string.Join("\n", Targets)}");
             this.logger.LogDebug("======================================");
 
             if (LogLevelIsVerbose)
@@ -63,52 +68,56 @@ namespace StyleCopAnalyzers.CLI
 
             Initialize();
 
-            var inputKind = CommandHelper.GetInputKindFromFileOrDirectory(TargetFileOrDirectory);
-            if (!inputKind.HasValue) { return; }
-
-            foreach (var analyzer in this.allAnalyzers)
+            foreach (var target in Targets)
             {
-                this.logger.LogVerbose("Analyze :" + string.Join(",", analyzer.SupportedDiagnostics.Select(d => d.Id)));
-                foreach (var descriptor in analyzer.SupportedDiagnostics)
+                var targetFileOrDirectory = CommandHelper.GetAbsolutePath(target);
+                var inputKind = CommandHelper.GetInputKindFromFileOrDirectory(targetFileOrDirectory);
+                if (!inputKind.HasValue) { continue; }
+
+                foreach (var analyzer in this.allAnalyzers)
                 {
-                    this.logger.LogVerbose(" " + descriptor.Description);
-                }
-
-                var projects = LoadProject(inputKind.Value);
-                if (projects.IsDefaultOrEmpty) { return; }
-
-                var diagnostics = await CommandHelper.GetAnalyzerDiagnosticsAsync(
-                        projects,
-                        ImmutableArray.Create(analyzer),
-                        cancellationToken)
-                    .ConfigureAwait(false);
-
-                if (diagnostics.IsDefaultOrEmpty)
-                {
-                    continue;
-                }
-
-                var fixableCodeFixProviders = GetFixableCodeFixProviders(diagnostics.Select(d => d.Id).ToImmutableArray());
-                if (fixableCodeFixProviders.IsDefaultOrEmpty)
-                {
-                    this.logger.LogVerbose($"Not Fixed : {diagnostics[0].Location.SourceTree?.FilePath}\n    {diagnostics[0].Id} {diagnostics[0].GetMessage()}\n    NotFound codeFixProvider");
-                    continue;
-                }
-
-                try
-                {
-                    this.logger.LogVerbose($"Try Fix : {diagnostics[0].Id} {diagnostics[0].GetMessage()}");
-                    var fixedContexts = await FixDiagnosticsAsync(projects, diagnostics, fixableCodeFixProviders, cancellationToken).ConfigureAwait(false);
-                    var documentWriter = new FixedDocumentContextWriter() as IFixedContextWriter;
-                    documentWriter.SetLogger(this.logger);
-                    foreach (var context in fixedContexts)
+                    this.logger.LogVerbose("Analyze :" + string.Join(",", analyzer.SupportedDiagnostics.Select(d => d.Id)));
+                    foreach (var descriptor in analyzer.SupportedDiagnostics)
                     {
-                        documentWriter.Write(context);
+                        this.logger.LogVerbose(" " + descriptor.Description);
                     }
-                }
-                catch (Exception exception)
-                {
-                    Console.WriteLine(exception);
+
+                    var projects = inputKind.Value.ToReader().ReadAllSourceCodeFiles(target, StyleCopJsonFilePath);
+                    if (projects.IsDefaultOrEmpty) { return; }
+
+                    var diagnostics = await CommandHelper.GetAnalyzerDiagnosticsAsync(
+                            projects,
+                            ImmutableArray.Create(analyzer),
+                            cancellationToken)
+                        .ConfigureAwait(false);
+
+                    if (diagnostics.IsDefaultOrEmpty)
+                    {
+                        continue;
+                    }
+
+                    var fixableCodeFixProviders = GetFixableCodeFixProviders(diagnostics.Select(d => d.Id).ToImmutableArray());
+                    if (fixableCodeFixProviders.IsDefaultOrEmpty)
+                    {
+                        this.logger.LogVerbose($"Not Fixed : {diagnostics[0].Location.SourceTree?.FilePath}\n    {diagnostics[0].Id} {diagnostics[0].GetMessage()}\n    NotFound codeFixProvider");
+                        continue;
+                    }
+
+                    try
+                    {
+                        this.logger.LogVerbose($"Try Fix : {diagnostics[0].Id} {diagnostics[0].GetMessage()}");
+                        var fixedContexts = await FixDiagnosticsAsync(projects, diagnostics, fixableCodeFixProviders, cancellationToken).ConfigureAwait(false);
+                        var documentWriter = new FixedDocumentContextWriter() as IFixedContextWriter;
+                        documentWriter.SetLogger(this.logger);
+                        foreach (var context in fixedContexts)
+                        {
+                            documentWriter.Write(context);
+                        }
+                    }
+                    catch (Exception exception)
+                    {
+                        Console.WriteLine(exception);
+                    }
                 }
             }
         }
@@ -156,11 +165,6 @@ namespace StyleCopAnalyzers.CLI
             }
 
             return fixedContexts.ToImmutableArray();
-        }
-
-        private ImmutableArray<Project> LoadProject(InputKind inputKind)
-        {
-            return inputKind.ToReader().ReadAllSourceCodeFiles(TargetFileOrDirectory, StyleCopJsonFilePath);
         }
 
         private ImmutableArray<CodeFixProvider> GetFixableCodeFixProviders(ImmutableArray<string> diagnosticIds)

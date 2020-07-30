@@ -25,7 +25,11 @@ namespace StyleCopAnalyzers.CLI
                 return ImmutableArray<Project>.Empty;
             }
 
-            MSBuildLocator.RegisterDefaults();
+            if (!MSBuildLocator.IsRegistered)
+            {
+                MSBuildLocator.RegisterDefaults();
+            }
+
             MSBuildWorkspace workspace = MSBuildWorkspace.Create();
             var project = workspace.OpenProjectAsync(csprojFilePath).Result;
 
