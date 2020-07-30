@@ -15,7 +15,7 @@ namespace StyleCopAnalyzers.CLI
             FixedResult = fixedResult;
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return obj is FixedDocumentContext context &&
                    EqualityComparer<Document>.Default.Equals(Document, context.Document) &&

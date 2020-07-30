@@ -44,7 +44,7 @@ namespace StyleCopAnalyzers.CLI
                 RemovedDocuments = removedDocuments;
             }
 
-            public override bool Equals(object obj)
+            public override bool Equals(object? obj)
             {
                 return obj is FixedResult result && Equals(result);
             }
