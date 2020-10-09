@@ -2,6 +2,7 @@
 namespace StyleCopAnalyzers.CLI
 {
     using System;
+    using System.Collections.Generic;
     using System.Collections.Immutable;
     using System.IO;
     using System.Threading;
@@ -34,9 +35,23 @@ namespace StyleCopAnalyzers.CLI
                 CancellationToken cancellationToken)
         {
             var diagnosticsAll = ImmutableArray.CreateBuilder<Diagnostic>();
+            var supportedDiagnosticsSpecificOptions = new Dictionary<string, ReportDiagnostic>();
+
+            foreach (var analyzer in analyzers)
+            {
+                foreach (var diagnostic in analyzer.SupportedDiagnostics)
+                {
+                    supportedDiagnosticsSpecificOptions[diagnostic.Id] = ReportDiagnostic.Default;
+                }
+            }
+        
             foreach (var project in projects)
             {
-                var compilation = await project.GetCompilationAsync(cancellationToken).ConfigureAwait(false);
+                var modifiedSpecificDiagnosticOptions = supportedDiagnosticsSpecificOptions.ToImmutableDictionary().SetItems(project.CompilationOptions.SpecificDiagnosticOptions);
+                var modifiedCompilationOptions = project.CompilationOptions.WithSpecificDiagnosticOptions(modifiedSpecificDiagnosticOptions);
+                var processedProject = project.WithCompilationOptions(modifiedCompilationOptions);
+
+                var compilation = await processedProject.GetCompilationAsync(cancellationToken).ConfigureAwait(false);
                 var compilationWithAnalyzers = compilation!.WithAnalyzers(analyzers, project.AnalyzerOptions);
                 var diagnostics = await compilationWithAnalyzers.GetAnalyzerDiagnosticsAsync(cancellationToken).ConfigureAwait(false);
 
