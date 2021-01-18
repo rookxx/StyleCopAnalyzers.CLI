@@ -6,8 +6,20 @@
     <CodeAnalysisRuleSet>stylecop.ruleset</CodeAnalysisRuleSet>
     <LangVersion>8.0</LangVersion>
     <Nullable>enable</Nullable>
-    <AssemblyVersion>1.0.0.1</AssemblyVersion>
-    <Version>1.0.0</Version>
+    <AssemblyVersion>1.0.1.1</AssemblyVersion>
+    <Version>1.0.1</Version>
+    <PackageId>rookxx.stylecopanalyzers-cli</PackageId>
+    <Authors>rookxx</Authors>
+    <Title>StyleCop.Analyzers CLI tool</Title>
+    <Summary>StyleCop.Analyzers CLI tool</Summary>
+    <Description>
+      StyleCopAnalyzers.CLI is a tool to check C# coding style with CLI, commit-hook, etc.
+    </Description>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>style</ToolCommandName>
+    <PackageOutputPath>./nupkg</PackageOutputPath>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <RepositoryURL>https://github.com/rookxx/StyleCopAnalyzers.CLI</RepositoryURL>
   </PropertyGroup>
   <PropertyGroup>
     <DefaultItemExcludes>$(DefaultItemExcludes);Sandbox\**</DefaultItemExcludes>
@@ -15,16 +27,16 @@
 
   <ItemGroup>
     <PackageReference Include="CommandLineParser" Version="2.8.0" />
-    <PackageReference Include="Microsoft.Build.Locator" Version="1.2.6" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="3.6.0" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.6.0" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="3.6.0" />
-    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="3.0.0">
+    <PackageReference Include="Microsoft.Build.Locator" Version="1.4.1" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="3.9.0-3.final" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.9.0-3.final" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="3.9.0-3.final" />
+    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="5.0.3">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="3.6.0" />
-    <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.164">
+    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="3.9.0-3.final" />
+    <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.321">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>

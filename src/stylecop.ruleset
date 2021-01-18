@@ -126,5 +126,8 @@
     <Rule Id="CA1031" Action="None" />
     <Rule Id="CA1051" Action="None" />
     <Rule Id="CA1034" Action="None" />
+    <Rule Id="SX1101" Action="None" />
+    <Rule Id="SA1412" Action="None" />
+    <Rule Id="SX1309" Action="None" />
   </Rules>
 </RuleSet>

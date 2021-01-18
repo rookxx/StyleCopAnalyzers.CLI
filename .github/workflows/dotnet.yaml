@@ -26,7 +26,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-latest]
         # see also https://dotnetcli.blob.core.windows.net/dotnet/release-metadata/releases-index.json
         dotnet: ["3.1"]
     steps:
@@ -119,3 +119,18 @@ jobs:
           asset_path: ./${{ matrix.rid }}.zip
           asset_name: ${{ steps.release_info.outputs.file_name }}-${{ matrix.rid }}-core${{ matrix.dotnet }}.zip
           asset_content_type: application/zip
+
+  publish-nuget-org:
+    if: contains(github.ref, 'tags/v')
+    name: Publish NuGet.org
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET Core SDK
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 3.1.x
+    - name: Publish To nuget.org
+      run : |
+        dotnet pack ./src/StyleCopAnalyzers.CLI.csproj --output ./artifacts --configuration Release
+        dotnet nuget push ./artifacts/rookxx.stylecopanalyzers-cli.*.nupkg -k ${{ secrets.NUGET_API_KEY }} -s https://api.nuget.org/v3/index.json --skip-duplicate
