@@ -1,2 +1,4 @@
-packages
-.vscode
+packages/
+.vscode/
+artifacts/
+.config/
