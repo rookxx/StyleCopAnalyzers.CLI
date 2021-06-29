@@ -12,6 +12,8 @@ namespace StyleCopAnalyzers.CLI
 
     public class AnalyzerLoader
     {
+        public IReadOnlyDictionary<string, ReportDiagnostic> RuleSets => rulesets;
+
         private const string StyleCopAnalyzersDll = "StyleCop.Analyzers";
         private const string StyleCopAnalyzersCodeFixesDll = "StyleCop.Analyzers.CodeFixes";
 
@@ -100,6 +102,7 @@ namespace StyleCopAnalyzers.CLI
                     return false;
                 }
             }
+
             return true;
         }
 
