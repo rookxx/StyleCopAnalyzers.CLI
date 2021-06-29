@@ -27,6 +27,7 @@ namespace StyleCopAnalyzers.CLI
 
         private ImmutableArray<CodeFixProvider> allCodeFixProviders;
         private ImmutableArray<DiagnosticAnalyzer> allAnalyzers;
+        private AnalyzerLoader analyzerLoader;
 
         public StyleFixer() { }
 
@@ -39,7 +40,7 @@ namespace StyleCopAnalyzers.CLI
 
         public void Initialize()
         {
-            var analyzerLoader = new AnalyzerLoader(RuleSetFilePath);
+            this.analyzerLoader = new AnalyzerLoader(RuleSetFilePath);
             this.allAnalyzers = analyzerLoader.GetAnalyzers();
             this.allCodeFixProviders = analyzerLoader.GetCodeFixProviders();
         }
@@ -88,6 +89,7 @@ namespace StyleCopAnalyzers.CLI
                     var diagnostics = await CommandHelper.GetAnalyzerDiagnosticsAsync(
                             projects,
                             ImmutableArray.Create(analyzer),
+                            analyzerLoader.RuleSets,
                             cancellationToken)
                         .ConfigureAwait(false);
 

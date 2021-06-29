@@ -32,6 +32,7 @@ namespace StyleCopAnalyzers.CLI
         public static async Task<ImmutableArray<Diagnostic>> GetAnalyzerDiagnosticsAsync(
                 ImmutableArray<Project> projects,
                 ImmutableArray<DiagnosticAnalyzer> analyzers,
+                IReadOnlyDictionary<string, ReportDiagnostic> ruleSets,
                 CancellationToken cancellationToken)
         {
             var diagnosticsAll = ImmutableArray.CreateBuilder<Diagnostic>();
@@ -41,10 +42,12 @@ namespace StyleCopAnalyzers.CLI
             {
                 foreach (var diagnostic in analyzer.SupportedDiagnostics)
                 {
-                    supportedDiagnosticsSpecificOptions[diagnostic.Id] = ReportDiagnostic.Default;
+                    supportedDiagnosticsSpecificOptions[diagnostic.Id] = ruleSets.ContainsKey(diagnostic.Id) ?
+                        ruleSets[diagnostic.Id] :
+                        ReportDiagnostic.Default;
                 }
             }
-        
+
             foreach (var project in projects)
             {
                 var modifiedSpecificDiagnosticOptions = supportedDiagnosticsSpecificOptions.ToImmutableDictionary().SetItems(project.CompilationOptions.SpecificDiagnosticOptions);

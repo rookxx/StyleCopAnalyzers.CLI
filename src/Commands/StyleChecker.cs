@@ -80,7 +80,11 @@ namespace StyleCopAnalyzers.CLI
 
             var analyzerLoader = new AnalyzerLoader(RuleSetFilePath);
             var analyzers = analyzerLoader.GetAnalyzers();
-            var diagnostics = await CommandHelper.GetAnalyzerDiagnosticsAsync(projects.ToImmutable(), analyzers, cancellationToken).ConfigureAwait(false);
+            var diagnostics = await CommandHelper.GetAnalyzerDiagnosticsAsync(
+                projects.ToImmutable(),
+                analyzers,
+                analyzerLoader.RuleSets,
+                cancellationToken).ConfigureAwait(false);
 
             var writer = outputKind.ToWriter();
             writer.Write(diagnostics);
