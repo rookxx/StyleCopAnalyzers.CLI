@@ -4,10 +4,10 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net5</TargetFramework>
     <CodeAnalysisRuleSet>stylecop.ruleset</CodeAnalysisRuleSet>
-    <LangVersion>8.0</LangVersion>
+    <LangVersion>9.0</LangVersion>
     <Nullable>enable</Nullable>
     <AssemblyVersion>1.0.1.1</AssemblyVersion>
-    <Version>1.0.5</Version>
+    <Version>1.0.6</Version>
     <PackageId>rookxx.stylecopanalyzers-cli</PackageId>
     <Authors>rookxx</Authors>
     <Title>StyleCop.Analyzers CLI tool</Title>
@@ -36,7 +36,7 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="3.9.0-3.final" />
-    <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.321">
+    <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.354">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
@@ -50,10 +50,10 @@
 
   <ItemGroup>
     <Reference Include="StyleCop.Analyzers">
-      <HintPath>..\packages\stylecop.analyzers.unstable\1.2.0.164\analyzers\dotnet\cs\StyleCop.Analyzers.dll</HintPath>
+      <HintPath>..\packages\stylecop.analyzers.unstable\1.2.0.354\analyzers\dotnet\cs\StyleCop.Analyzers.dll</HintPath>
     </Reference>
     <Reference Include="StyleCop.Analyzers.CodeFixes">
-      <HintPath>..\packages\stylecop.analyzers.unstable\1.2.0.164\analyzers\dotnet\cs\StyleCop.Analyzers.CodeFixes.dll</HintPath>
+      <HintPath>..\packages\stylecop.analyzers.unstable\1.2.0.354\analyzers\dotnet\cs\StyleCop.Analyzers.CodeFixes.dll</HintPath>
     </Reference>
   </ItemGroup>
 </Project>
