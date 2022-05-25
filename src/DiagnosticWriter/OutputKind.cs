@@ -1,35 +1,34 @@
-namespace StyleCopAnalyzers.CLI
+namespace StyleCopAnalyzers.CLI;
+
+public enum OutputKind
 {
-    public enum OutputKind
-    {
-        Undefined,
-        RawText,
-        LegacyStyleCopXml,
-    }
+    Undefined,
+    RawText,
+    LegacyStyleCopXml,
+}
 
-    public static class OutputKindExtensions
+public static class OutputKindExtensions
+{
+    public static IDiagnosticWriter ToWriter(this OutputKind kind)
     {
-        public static IDiagnosticWriter ToWriter(this OutputKind kind)
+        return kind switch
         {
-            return kind switch
-            {
-                OutputKind.RawText => new ConsoleWriter(),
-                OutputKind.LegacyStyleCopXml => new XmlWriter(),
-                _ => throw new System.ArgumentException($"Undefined outputKind [{kind}]"),
-            };
-        }
+            OutputKind.RawText => new ConsoleWriter(),
+            OutputKind.LegacyStyleCopXml => new XmlWriter(),
+            _ => throw new System.ArgumentException($"Undefined outputKind [{kind}]"),
+        };
     }
+}
 
-    public static class OutputKindHelper
+public static class OutputKindHelper
+{
+    public static OutputKind ToOutputKind(string kindString)
     {
-        public static OutputKind ToOutputKind(string kindString)
+        return kindString switch
         {
-            return kindString switch
-            {
-                "text" => OutputKind.RawText,
-                "xml" => OutputKind.LegacyStyleCopXml,
-                _ => OutputKind.Undefined,
-            };
-        }
+            "text" => OutputKind.RawText,
+            "xml" => OutputKind.LegacyStyleCopXml,
+            _ => OutputKind.Undefined,
+        };
     }
 }

@@ -1,11 +1,7 @@
-namespace StyleCopAnalyzers.CLI
-{
-    using System.Threading.Tasks;
-    using Microsoft.CodeAnalysis;
+namespace StyleCopAnalyzers.CLI;
 
-    public interface IFixedContextWriter
-    {
-        void SetLogger(ILogger logger);
-        void Write(FixedDocumentContext fixedContext);
-    }
+public interface IFixedContextWriter
+{
+    void SetLogger(ILogger logger);
+    void Write(FixedDocumentContext fixedContext);
 }
