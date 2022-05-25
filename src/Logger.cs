@@ -1,69 +1,68 @@
-namespace StyleCopAnalyzers.CLI
+namespace StyleCopAnalyzers.CLI;
+
+using System;
+using System.Diagnostics;
+
+public enum LogLevel
 {
-    using System;
-    using System.Diagnostics;
+    Silent,
+    Infomation,
+    Verbose,
+}
 
-    public enum LogLevel
+public interface ILogger
+{
+    void SetLogLevel(LogLevel level);
+    void LogInformation(object message);
+    void LogDebug(object message);
+    void LogVerbose(object message);
+    void LogError(object message);
+}
+
+public class SilentLogger : ILogger
+{
+    void ILogger.LogDebug(object message) { }
+    void ILogger.LogInformation(object message) { }
+    void ILogger.LogVerbose(object message) { }
+    void ILogger.SetLogLevel(LogLevel level) { }
+    void ILogger.LogError(object message) { }
+}
+
+public class SimpleConsoleLogger : ILogger
+{
+    private LogLevel logLevel;
+
+    public SimpleConsoleLogger()
     {
-        Silent,
-        Infomation,
-        Verbose,
+        logLevel = LogLevel.Infomation;
     }
 
-    public interface ILogger
+    void ILogger.SetLogLevel(LogLevel level)
     {
-        void SetLogLevel(LogLevel level);
-        void LogInformation(object message);
-        void LogDebug(object message);
-        void LogVerbose(object message);
-        void LogError(object message);
+        logLevel = level;
     }
 
-    public class SilentLogger : ILogger
+    void ILogger.LogInformation(object message)
     {
-        void ILogger.LogDebug(object message) { }
-        void ILogger.LogInformation(object message) { }
-        void ILogger.LogVerbose(object message) { }
-        void ILogger.SetLogLevel(LogLevel level) { }
-        void ILogger.LogError(object message) { }
+        if (logLevel < LogLevel.Infomation) { return; }
+        Console.WriteLine(message);
     }
 
-    public class SimpleConsoleLogger : ILogger
+    void ILogger.LogDebug(object message)
     {
-        private LogLevel logLevel;
-
-        public SimpleConsoleLogger()
-        {
-            logLevel = LogLevel.Infomation;
-        }
-
-        void ILogger.SetLogLevel(LogLevel level)
-        {
-            logLevel = level;
-        }
-
-        void ILogger.LogInformation(object message)
-        {
-            if (logLevel < LogLevel.Infomation) { return; }
-            Console.WriteLine(message);
-        }
-
-        void ILogger.LogDebug(object message)
-        {
 #if DEBUG
-            Console.WriteLine(message);
+        Console.WriteLine(message);
 #endif
-        }
+    }
 
-        void ILogger.LogVerbose(object message)
-        {
-            if (logLevel < LogLevel.Verbose) { return; }
-            Console.WriteLine(message);
-        }
+    void ILogger.LogVerbose(object message)
+    {
+        if (logLevel < LogLevel.Verbose) { return; }
+        Console.WriteLine(message);
+    }
 
-        void ILogger.LogError(object message)
-        {
-            Console.Error.WriteLine(message);
-        }
+    void ILogger.LogError(object message)
+    {
+        Console.Error.WriteLine(message);
     }
 }

@@ -1,134 +1,133 @@
-namespace StyleCopAnalyzers.CLI
+namespace StyleCopAnalyzers.CLI;
+
+using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.IO;
+using System.Reflection;
+using System.Runtime.Loader;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CodeFixes;
+using Microsoft.CodeAnalysis.Diagnostics;
+
+public class AnalyzerLoader
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Collections.Immutable;
-    using System.IO;
-    using System.Reflection;
-    using System.Runtime.Loader;
-    using Microsoft.CodeAnalysis;
-    using Microsoft.CodeAnalysis.CodeFixes;
-    using Microsoft.CodeAnalysis.Diagnostics;
+    public IReadOnlyDictionary<string, ReportDiagnostic> RuleSets => rulesets;
 
-    public class AnalyzerLoader
+    private const string StyleCopAnalyzersDll = "StyleCop.Analyzers";
+    private const string StyleCopAnalyzersCodeFixesDll = "StyleCop.Analyzers.CodeFixes";
+
+    private readonly Dictionary<string, ReportDiagnostic> rulesets = new Dictionary<string, ReportDiagnostic>();
+
+    public AnalyzerLoader(string ruleSetFilePath)
     {
-        public IReadOnlyDictionary<string, ReportDiagnostic> RuleSets => rulesets;
-
-        private const string StyleCopAnalyzersDll = "StyleCop.Analyzers";
-        private const string StyleCopAnalyzersCodeFixesDll = "StyleCop.Analyzers.CodeFixes";
-
-        private readonly Dictionary<string, ReportDiagnostic> rulesets = new Dictionary<string, ReportDiagnostic>();
-
-        public AnalyzerLoader(string ruleSetFilePath)
+        if (File.Exists(ruleSetFilePath))
         {
-            if (File.Exists(ruleSetFilePath))
-            {
-                RuleSet.GetDiagnosticOptionsFromRulesetFile(ruleSetFilePath, out rulesets);
-            }
-
-            rulesets.Add("AD0001", ReportDiagnostic.Error);
+            RuleSet.GetDiagnosticOptionsFromRulesetFile(ruleSetFilePath, out rulesets);
         }
 
-        public ImmutableArray<DiagnosticAnalyzer> GetAnalyzers()
+        rulesets.Add("AD0001", ReportDiagnostic.Error);
+    }
+
+    public ImmutableArray<DiagnosticAnalyzer> GetAnalyzers()
+    {
+        var name = new AssemblyName(StyleCopAnalyzersDll);
+        var stylecop = AssemblyLoadContext.Default.LoadFromAssemblyName(name);
+        var assembly = stylecop.GetType("StyleCop.Analyzers.NoCodeFixAttribute")?.Assembly;
+        if (assembly == null) { return default; }
+
+        var diagnosticAnalyzerType = typeof(DiagnosticAnalyzer);
+
+        var analyzers = ImmutableArray.CreateBuilder<DiagnosticAnalyzer>();
+
+        foreach (var type in assembly.GetTypes())
         {
-            var name = new AssemblyName(StyleCopAnalyzersDll);
-            var stylecop = AssemblyLoadContext.Default.LoadFromAssemblyName(name);
-            var assembly = stylecop.GetType("StyleCop.Analyzers.NoCodeFixAttribute")?.Assembly;
-            if (assembly == null) { return default; }
-
-            var diagnosticAnalyzerType = typeof(DiagnosticAnalyzer);
-
-            var analyzers = ImmutableArray.CreateBuilder<DiagnosticAnalyzer>();
-
-            foreach (var type in assembly.GetTypes())
+            if (!type.IsSubclassOf(diagnosticAnalyzerType) || type.IsAbstract)
             {
-                if (!type.IsSubclassOf(diagnosticAnalyzerType) || type.IsAbstract)
-                {
-                    continue;
-                }
-                if (!(Activator.CreateInstance(type) is DiagnosticAnalyzer analyzer))
-                {
-                    continue;
-                }
-                if (!IsValidAnalyzer(analyzer, rulesets))
-                {
-                    continue;
-                }
-
-                analyzers.Add(analyzer!);
+                continue;
+            }
+            if (!(Activator.CreateInstance(type) is DiagnosticAnalyzer analyzer))
+            {
+                continue;
+            }
+            if (!IsValidAnalyzer(analyzer, rulesets))
+            {
+                continue;
             }
 
-            return analyzers.ToImmutable();
+            analyzers.Add(analyzer!);
         }
 
-        public ImmutableArray<CodeFixProvider> GetCodeFixProviders()
+        return analyzers.ToImmutable();
+    }
+
+    public ImmutableArray<CodeFixProvider> GetCodeFixProviders()
+    {
+        var name = new AssemblyName(StyleCopAnalyzersCodeFixesDll);
+        var assembly = AssemblyLoadContext.Default.LoadFromAssemblyName(name);
+
+        var codeFixProviderType = typeof(CodeFixProvider);
+
+        var providers = ImmutableArray.CreateBuilder<CodeFixProvider>();
+
+        foreach (var type in assembly.GetTypes())
         {
-            var name = new AssemblyName(StyleCopAnalyzersCodeFixesDll);
-            var assembly = AssemblyLoadContext.Default.LoadFromAssemblyName(name);
-
-            var codeFixProviderType = typeof(CodeFixProvider);
-
-            var providers = ImmutableArray.CreateBuilder<CodeFixProvider>();
-
-            foreach (var type in assembly.GetTypes())
+            if (!type.IsSubclassOf(codeFixProviderType) || type.IsAbstract)
             {
-                if (!type.IsSubclassOf(codeFixProviderType) || type.IsAbstract)
-                {
-                    continue;
-                }
-
-                if (!(Activator.CreateInstance(type) is CodeFixProvider codeFixProvider))
-                {
-                    continue;
-                }
-
-                if (!IsValidCodeFixProvider(codeFixProvider, rulesets))
-                {
-                    continue;
-                }
-
-                providers.Add(codeFixProvider);
+                continue;
             }
 
-            return providers.ToImmutableArray();
-        }
-
-        private bool IsValidAnalyzer(DiagnosticAnalyzer analyzer, Dictionary<string, ReportDiagnostic> rulesets)
-        {
-            foreach (var diagnostic in analyzer.SupportedDiagnostics)
+            if (!(Activator.CreateInstance(type) is CodeFixProvider codeFixProvider))
             {
-                if (!IsValidRule(diagnostic.Id, rulesets))
-                {
-                    return false;
-                }
+                continue;
             }
 
-            return true;
+            if (!IsValidCodeFixProvider(codeFixProvider, rulesets))
+            {
+                continue;
+            }
+
+            providers.Add(codeFixProvider);
         }
 
-        private bool IsValidCodeFixProvider(CodeFixProvider codeFixProvider, Dictionary<string, ReportDiagnostic> rulesets)
+        return providers.ToImmutableArray();
+    }
+
+    private bool IsValidAnalyzer(DiagnosticAnalyzer analyzer, Dictionary<string, ReportDiagnostic> rulesets)
+    {
+        foreach (var diagnostic in analyzer.SupportedDiagnostics)
         {
-            foreach (var diagnosticId in codeFixProvider.FixableDiagnosticIds)
+            if (!IsValidRule(diagnostic.Id, rulesets))
             {
-                if (!IsValidRule(diagnosticId, rulesets))
-                {
-                    return false;
-                }
+                return false;
             }
-            return true;
         }
 
-        private bool IsValidRule(string diagnosticId, Dictionary<string, ReportDiagnostic> rulesets)
+        return true;
+    }
+
+    private bool IsValidCodeFixProvider(CodeFixProvider codeFixProvider, Dictionary<string, ReportDiagnostic> rulesets)
+    {
+        foreach (var diagnosticId in codeFixProvider.FixableDiagnosticIds)
         {
-            if (rulesets.ContainsKey(diagnosticId))
+            if (!IsValidRule(diagnosticId, rulesets))
             {
-                if (rulesets[diagnosticId] == ReportDiagnostic.Suppress ||
-                    rulesets[diagnosticId] == ReportDiagnostic.Hidden)
-                {
-                    return false;
-                }
+                return false;
             }
-            return true;
         }
+        return true;
+    }
+
+    private bool IsValidRule(string diagnosticId, Dictionary<string, ReportDiagnostic> rulesets)
+    {
+        if (rulesets.ContainsKey(diagnosticId))
+        {
+            if (rulesets[diagnosticId] == ReportDiagnostic.Suppress ||
+                rulesets[diagnosticId] == ReportDiagnostic.Hidden)
+            {
+                return false;
+            }
+        }
+        return true;
     }
 }

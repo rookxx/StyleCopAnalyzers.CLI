@@ -1,61 +1,62 @@
-namespace StyleCopAnalyzers.CLI
+namespace StyleCopAnalyzers.CLI;
+
+using System.Collections.Immutable;
+using System.IO;
+using Microsoft.CodeAnalysis;
+
+public class FixedDocumentContextWriter : IFixedContextWriter
 {
-    using System;
-    using System.Collections.Immutable;
-    using System.IO;
-    using System.Threading.Tasks;
-    using Microsoft.CodeAnalysis;
+    private ILogger logger = new SilentLogger();
 
-    public class FixedDocumentContextWriter : IFixedContextWriter
+    void IFixedContextWriter.SetLogger(ILogger logger)
     {
-        private ILogger logger = new SilentLogger();
+        this.logger = logger;
+    }
 
-        void IFixedContextWriter.SetLogger(ILogger logger)
+    void IFixedContextWriter.Write(FixedDocumentContext context)
+    {
+        this.logger.LogInformation("    Fix: " + context.Document.FilePath);
+        WriteChangedDocuments(context.FixedResult.ChangedDocuments);
+
+        var directoryPath = Path.GetDirectoryName(context.Document.FilePath);
+        AddNewDocuments(directoryPath!, context.FixedResult.AddedDocuments);
+
+        RemoveDocuments(context.FixedResult.RemovedDocuments);
+    }
+
+    private void WriteChangedDocuments(ImmutableArray<Document> documents)
+    {
+        foreach (var document in documents)
         {
-            this.logger = logger;
+            var path = document.FilePath;
+            var text = document.GetTextAsync().Result;
+            this.logger.LogVerbose("        Changed:" + path);
+            File.WriteAllText(path, text.ToString());
         }
+    }
 
-        void IFixedContextWriter.Write(FixedDocumentContext context)
+    private void AddNewDocuments(string directoryPath, ImmutableArray<Document> documents)
+    {
+        foreach (var document in documents)
         {
-            this.logger.LogInformation("    Fix: " + context.Document.FilePath);
-            WriteChangedDocuments(context.FixedResult.ChangedDocuments);
-
-            var directoryPath = Path.GetDirectoryName(context.Document.FilePath);
-            AddNewDocuments(directoryPath!, context.FixedResult.AddedDocuments);
-
-            RemoveDocuments(context.FixedResult.RemovedDocuments);
+            var fileName = document.Name;
+            var path = Path.Combine(directoryPath, fileName);
+            var text = document.GetTextAsync().Result;
+            this.logger.LogVerbose("        Added:" + path);
+            File.WriteAllText(path, text.ToString());
         }
+    }
 
-        private void WriteChangedDocuments(ImmutableArray<Document> documents)
+    private void RemoveDocuments(ImmutableArray<Document> documents)
+    {
+        foreach (var document in documents)
         {
-            foreach (var document in documents)
+            if (document.FilePath == null)
             {
-                var path = document.FilePath;
-                var text = document.GetTextAsync().Result;
-                this.logger.LogVerbose("        Changed:" + path);
-                File.WriteAllText(path, text.ToString());
+                continue;
             }
-        }
-
-        private void AddNewDocuments(string directoryPath, ImmutableArray<Document> documents)
-        {
-            foreach (var document in documents)
-            {
-                var fileName = document.Name;
-                var path = Path.Combine(directoryPath, fileName);
-                var text = document.GetTextAsync().Result;
-                this.logger.LogVerbose("        Added:" + path);
-                File.WriteAllText(path, text.ToString());
-            }
-        }
-
-        private void RemoveDocuments(ImmutableArray<Document> documents)
-        {
-            foreach (var document in documents)
-            {
-                this.logger.LogVerbose("        Removed:" + document.FilePath);
-                File.Delete(document.FilePath);
-            }
+            this.logger.LogVerbose("        Removed:" + document.FilePath);
+            File.Delete(document.FilePath);
         }
     }
 }

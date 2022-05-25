@@ -1,59 +1,55 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>net5</TargetFramework>
-    <CodeAnalysisRuleSet>stylecop.ruleset</CodeAnalysisRuleSet>
-    <LangVersion>9.0</LangVersion>
-    <Nullable>enable</Nullable>
-    <AssemblyVersion>1.0.1.1</AssemblyVersion>
-    <Version>1.0.6</Version>
-    <PackageId>rookxx.stylecopanalyzers-cli</PackageId>
-    <Authors>rookxx</Authors>
-    <Title>StyleCop.Analyzers CLI tool</Title>
-    <Summary>StyleCop.Analyzers CLI tool</Summary>
-    <Description>
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>net6</TargetFramework>
+		<CodeAnalysisRuleSet>stylecop.ruleset</CodeAnalysisRuleSet>
+		<LangVersion>10.0</LangVersion>
+		<Nullable>enable</Nullable>
+		<AssemblyVersion>1.0.1.1</AssemblyVersion>
+		<Version>1.0.6</Version>
+		<PackageId>rookxx.stylecopanalyzers-cli</PackageId>
+		<Authors>rookxx</Authors>
+		<Title>StyleCop.Analyzers CLI tool</Title>
+		<Summary>StyleCop.Analyzers CLI tool</Summary>
+		<Description>
       StyleCopAnalyzers.CLI is a tool to check C# coding style with CLI, commit-hook, etc.
     </Description>
-    <PackAsTool>true</PackAsTool>
-    <ToolCommandName>style</ToolCommandName>
-    <PackageOutputPath>./nupkg</PackageOutputPath>
-    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
-    <RepositoryURL>https://github.com/rookxx/StyleCopAnalyzers.CLI</RepositoryURL>
-  </PropertyGroup>
-  <PropertyGroup>
-    <DefaultItemExcludes>$(DefaultItemExcludes);Sandbox\**</DefaultItemExcludes>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="CommandLineParser" Version="2.8.0" />
-    <PackageReference Include="Microsoft.Build.Locator" Version="1.4.1" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="3.9.0-3.final" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.9.0-3.final" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="3.9.0-3.final" />
-    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="5.0.3">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="3.9.0-3.final" />
-    <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.354">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="System.Security.Permissions" Version="4.7.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include=".\stylecop.json" Link="stylecop.json" CopyToOutputDirectory="PreserveNewest" />
-    <Content Include=".\stylecop.ruleset" Link="stylecop.ruleset" CopyToOutputDirectory="PreserveNewest" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="StyleCop.Analyzers">
-      <HintPath>..\packages\stylecop.analyzers.unstable\1.2.0.354\analyzers\dotnet\cs\StyleCop.Analyzers.dll</HintPath>
-    </Reference>
-    <Reference Include="StyleCop.Analyzers.CodeFixes">
-      <HintPath>..\packages\stylecop.analyzers.unstable\1.2.0.354\analyzers\dotnet\cs\StyleCop.Analyzers.CodeFixes.dll</HintPath>
-    </Reference>
-  </ItemGroup>
+		<PackAsTool>true</PackAsTool>
+		<ToolCommandName>style</ToolCommandName>
+		<PackageOutputPath>./nupkg</PackageOutputPath>
+		<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+		<RepositoryURL>https://github.com/rookxx/StyleCopAnalyzers.CLI</RepositoryURL>
+	</PropertyGroup>
+	<PropertyGroup>
+		<DefaultItemExcludes>$(DefaultItemExcludes);Sandbox\**</DefaultItemExcludes>
+	</PropertyGroup>
+	<ItemGroup>
+		<PackageReference Include="CommandLineParser" Version="2.9.1"/>
+		<PackageReference Include="Microsoft.Build.Locator" Version="1.4.1"/>
+		<PackageReference Include="Microsoft.CodeAnalysis.Common" Version="4.2.0"/>
+		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.2.0"/>
+		<PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.2.0"/>
+		<PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="6.0.0">
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+			<PrivateAssets>all</PrivateAssets>
+		</PackageReference>
+		<PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="4.2.0"/>
+		<PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+			<PrivateAssets>all</PrivateAssets>
+		</PackageReference>
+		<PackageReference Include="System.Security.Permissions" Version="6.0.0"/>
+	</ItemGroup>
+	<ItemGroup>
+		<Content Include=".\stylecop.json" Link="stylecop.json" CopyToOutputDirectory="PreserveNewest"/>
+		<Content Include=".\stylecop.ruleset" Link="stylecop.ruleset" CopyToOutputDirectory="PreserveNewest"/>
+	</ItemGroup>
+	<ItemGroup>
+		<Reference Include="StyleCop.Analyzers">
+			<HintPath>..\packages\stylecop.analyzers.unstable\1.2.0.354\analyzers\dotnet\cs\StyleCop.Analyzers.dll</HintPath>
+		</Reference>
+		<Reference Include="StyleCop.Analyzers.CodeFixes">
+			<HintPath>..\packages\stylecop.analyzers.unstable\1.2.0.354\analyzers\dotnet\cs\StyleCop.Analyzers.CodeFixes.dll</HintPath>
+		</Reference>
+	</ItemGroup>
 </Project>
