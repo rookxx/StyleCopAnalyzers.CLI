@@ -88,7 +88,7 @@ public class SingleDiagnosticCodeFixer
         var fixAllProvider = this.codeFixProvider.GetFixAllProvider();
         if (fixAllProvider != null)
         {
-            return await FixCodeAllDiagnostics(this.codeFixProvider.GetFixAllProvider(), cancellationToken).ConfigureAwait(false);
+            return await FixCodeAllDiagnostics(fixAllProvider, cancellationToken).ConfigureAwait(false);
         }
         else
         {

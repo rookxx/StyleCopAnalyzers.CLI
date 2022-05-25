@@ -29,6 +29,10 @@ public class FixedDocumentContextWriter : IFixedContextWriter
         foreach (var document in documents)
         {
             var path = document.FilePath;
+            if (path == null)
+            {
+                continue;
+            }
             var text = document.GetTextAsync().Result;
             this.logger.LogVerbose("        Changed:" + path);
             File.WriteAllText(path, text.ToString());
