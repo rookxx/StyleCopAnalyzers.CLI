@@ -28,7 +28,7 @@ jobs:
       matrix:
         os: [ubuntu-latest]
         # see also https://dotnetcli.blob.core.windows.net/dotnet/release-metadata/releases-index.json
-        dotnet: ["5.0"]
+        dotnet: ["6.0"]
     steps:
       - uses: actions/checkout@v2
       - uses: actions/cache@v2.1.2
@@ -78,7 +78,7 @@ jobs:
       matrix:
         rid: [win-x64, linux-x64, osx-x64]
         # see also https://dotnetcli.blob.core.windows.net/dotnet/release-metadata/releases-index.json
-        dotnet: ["5.0"]
+        dotnet: ["6.0"]
     steps:
       - uses: actions/checkout@v2
       - uses: actions/cache@v2.1.2
